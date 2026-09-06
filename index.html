@@ -503,8 +503,8 @@
           </div>
 
           <div class="form-group search-autocomplete-wrap">
-            <label for="foodSearchLive">جستجوی غذا (خام، پروتئین، سبزی، میوه، برنج، نان...)</label>
-            <input type="text" id="foodSearchLive" placeholder="مثلاً: سینه مرغ خام، برنج طارم، گردو..." autocomplete="off">
+            <label for="foodSearchLive">جستجوی غذا (کنسرو، حبوبات، پاستا، گوشت، میوه، نان...)</label>
+            <input type="text" id="foodSearchLive" placeholder="مثلاً: کنسرو تن ماهی، پاستا پخته، لوبیا چیتی..." autocomplete="off">
             <div id="foodSearchResultsDropdown" class="search-results-dropdown"></div>
           </div>
 
@@ -655,7 +655,7 @@
       </div>
     </section>
 
-    <!-- ۶. اهداف و پروفایل (با توضیحات کامل سطح فعالیت و ذخیره‌سازی همیشگی) -->
+    <!-- ۶. اهداف و پروفایل -->
     <section id="profileGoalsView" class="view-section">
       <div class="grid-2">
         <div class="card">
@@ -760,13 +760,18 @@
           <input type="text" id="dbSearchQuery" placeholder="جستجو بر اساس نام ماده...">
           <select id="dbCategoryFilter">
             <option value="all">تمام دسته‌بندی‌ها</option>
-            <option value="protein_raw">پروتئین‌های خام (گوشت، مرغ، ماهی، تخم‌مرغ)</option>
-            <option value="protein_cooked">پروتئین‌های پخته و فرآوری‌شده</option>
+            <option value="canned">انواع کنسروها و غذاهای آماده</option>
+            <option value="pasta_raw">انواع پاستا و ماکارونی (خام و خشک)</option>
+            <option value="pasta_cooked">انواع پاستا و نودل (پخته و آماده)</option>
+            <option value="legumes_raw">حبوبات خام</option>
+            <option value="legumes_cooked">حبوبات پخته شده</option>
+            <option value="protein_raw">پروتئین‌های خام (گوشت، مرغ، ماهی)</option>
+            <option value="protein_cooked">پروتئین‌های پخته</option>
             <option value="fruits">میوه‌جات کامل</option>
             <option value="vegetables">سبزیجات و صیفی‌جات</option>
             <option value="nuts">خشکبار، آجیل و دانه‌ها</option>
-            <option value="grains_raw">غلات، برنج و حبوبات خام</option>
-            <option value="grains_cooked">نان‌ها، برنج پخته و ماکارونی</option>
+            <option value="grains_raw">غلات و برنج خام</option>
+            <option value="grains_cooked">نان‌ها و برنج پخته</option>
             <option value="iranian">غذاها و خوراک‌های سنتی ایرانی</option>
             <option value="dairy">لبنیات</option>
             <option value="fats">روغن‌ها و چربی‌ها</option>
@@ -841,6 +846,11 @@
           <div class="form-group">
             <label for="cfCategory">دسته</label>
             <select id="cfCategory">
+              <option value="canned">کنسروجات و غذاهای آماده</option>
+              <option value="pasta_raw">پاستا خام و خشک</option>
+              <option value="pasta_cooked">پاستا و نودل پخته</option>
+              <option value="legumes_raw">حبوبات خام</option>
+              <option value="legumes_cooked">حبوبات پخته</option>
               <option value="protein_raw">پروتئین خام</option>
               <option value="protein_cooked">پروتئین پخته</option>
               <option value="fruits">میوه</option>
@@ -874,9 +884,77 @@
   </footer>
 
   <script>
-    // بانک جامع و یکپارچه بدون حذف هیچ موردی از قبل
     const MASTER_FOODS = [
-      // ۱. پروتئین‌های خام
+      // ۱. انواع کنسروها و محصولات کنسروی
+      { id: "cn_tuna_water", name: "کنسرو تن ماهی در آب‌نمک (رژیمی)", category: "canned", state: "cooked", calories: 116, protein: 25.5, carbs: 0, fat: 0.8 },
+      { id: "cn_tuna_oil", name: "کنسرو تن ماهی در روغن (روغن‌کشیده)", category: "canned", state: "cooked", calories: 198, protein: 29.0, carbs: 0, fat: 8.2 },
+      { id: "cn_sardine_oil", name: "کنسرو ماهی ساردین در روغن", category: "canned", state: "cooked", calories: 208, protein: 24.6, carbs: 0, fat: 11.5 },
+      { id: "cn_sardine_tomato", name: "کنسرو ماهی ساردین در سس گوجه", category: "canned", state: "cooked", calories: 185, protein: 21.0, carbs: 2.5, fat: 10.0 },
+      { id: "cn_kilka", name: "کنسرو ماهی کیلکا در روغن", category: "canned", state: "cooked", calories: 190, protein: 22.0, carbs: 0, fat: 11.0 },
+      { id: "cn_salmon", name: "کنسرو ماهی سالمون در آب‌نمک", category: "canned", state: "cooked", calories: 142, protein: 20.0, carbs: 0, fat: 6.5 },
+      { id: "cn_pinto_beans", name: "کنسرو خوراک لوبیا چیتی ساده", category: "canned", state: "cooked", calories: 110, protein: 6.8, carbs: 19.5, fat: 0.8 },
+      { id: "cn_pinto_mushroom", name: "کنسرو خوراک لوبیا چیتی با قارچ", category: "canned", state: "cooked", calories: 115, protein: 7.0, carbs: 20.0, fat: 1.0 },
+      { id: "cn_chickpeas", name: "کنسرو نخود آب‌پز ساده", category: "canned", state: "cooked", calories: 128, protein: 7.2, carbs: 20.8, fat: 2.0 },
+      { id: "cn_lentils", name: "کنسرو خوراک عدسی آماده", category: "canned", state: "cooked", calories: 105, protein: 7.5, carbs: 17.5, fat: 0.9 },
+      { id: "cn_sweetcorn", name: "کنسرو ذرت شیرین طلایی", category: "canned", state: "cooked", calories: 86, protein: 3.2, carbs: 19.0, fat: 1.2 },
+      { id: "cn_greenpeas", name: "کنسرو نخود فرنگی لطیف", category: "canned", state: "cooked", calories: 70, protein: 4.8, carbs: 12.5, fat: 0.4 },
+      { id: "cn_mixed_veg", name: "کنسرو مخلوط سبزیجات (ذرت، نخود، هویج)", category: "canned", state: "cooked", calories: 65, protein: 3.0, carbs: 13.0, fat: 0.5 },
+      { id: "cn_mushroom_slice", name: "کنسرو قارچ ورقه‌ای اسلایس در آب‌نمک", category: "canned", state: "cooked", calories: 24, protein: 2.8, carbs: 3.5, fat: 0.3 },
+      { id: "cn_olives_green", name: "کنسرو زیتون سبز بدون هسته در آب‌نمک", category: "canned", state: "cooked", calories: 145, protein: 1.0, carbs: 3.8, fat: 15.3 },
+      { id: "cn_olives_black", name: "کنسرو زیتون سیاه در آب‌نمک", category: "canned", state: "cooked", calories: 165, protein: 1.2, carbs: 4.5, fat: 16.5 },
+      { id: "cn_greenbeans", name: "کنسرو لوبیا سبز خردشده", category: "canned", state: "cooked", calories: 25, protein: 1.4, carbs: 4.5, fat: 0.2 },
+      { id: "cn_eggplant_food", name: "کنسرو خوراک بادمجان", category: "canned", state: "cooked", calories: 95, protein: 1.8, carbs: 9.0, fat: 6.0 },
+      { id: "cn_kashk_bademjan", name: "کنسرو کشک بادمجان آماده", category: "canned", state: "cooked", calories: 140, protein: 4.2, carbs: 8.5, fat: 10.0 },
+      { id: "cn_ghormeh", name: "کنسرو خورشت قورمه‌سبزی با گوشت", category: "canned", state: "cooked", calories: 160, protein: 9.0, carbs: 7.0, fat: 11.0 },
+      { id: "cn_gheimeh", name: "کنسرو خورشت قیمه با سیب‌زمینی", category: "canned", state: "cooked", calories: 168, protein: 8.5, carbs: 13.5, fat: 9.0 },
+      { id: "cn_pineapple", name: "کمپوت آناناس در شربت رقیق", category: "canned", state: "cooked", calories: 75, protein: 0.4, carbs: 19.5, fat: 0.1 },
+      { id: "cn_peach", name: "کمپوت هلو با شربت", category: "canned", state: "cooked", calories: 80, protein: 0.5, carbs: 20.0, fat: 0.1 },
+
+      // ۲. پاستا، ماکارونی و نودل خام و خشک
+      { id: "pas_raw_spaghetti", name: "اسپاگتی و ماکارونی معمولی (خام خشک)", category: "pasta_raw", state: "raw", calories: 371, protein: 13.0, carbs: 75.0, fat: 1.5 },
+      { id: "pas_raw_penne", name: "پاستا پنه گندم ساده (خام خشک)", category: "pasta_raw", state: "raw", calories: 365, protein: 12.5, carbs: 74.5, fat: 1.4 },
+      { id: "pas_raw_fusilli", name: "پاستا فرمی فوسیلی/پیچ پیچی (خام خشک)", category: "pasta_raw", state: "raw", calories: 368, protein: 12.8, carbs: 74.8, fat: 1.5 },
+      { id: "pas_raw_wholegrain", name: "پاستا و ماکارونی سبوس‌دار جو یا گندم (خام)", category: "pasta_raw", state: "raw", calories: 348, protein: 14.5, carbs: 68.0, fat: 2.5 },
+      { id: "pas_raw_lasagna", name: "ورق لازانیا خشک (خام)", category: "pasta_raw", state: "raw", calories: 360, protein: 12.0, carbs: 74.0, fat: 1.6 },
+      { id: "pas_raw_instant_noodle", name: "نودل فوری الیت/اندومی قالبی (خشک خام)", category: "pasta_raw", state: "raw", calories: 440, protein: 9.5, carbs: 62.0, fat: 17.5 },
+      { id: "pas_raw_rice_noodle", name: "نودل برنج آسیایی (خام خشک)", category: "pasta_raw", state: "raw", calories: 364, protein: 3.4, carbs: 83.0, fat: 0.6 },
+
+      // ۳. پاستا، ماکارونی و نودل پخته شده
+      { id: "pas_ckd_spaghetti", name: "اسپاگتی و ماکارونی پخته آبکش (بدون سس)", category: "pasta_cooked", state: "cooked", calories: 158, protein: 5.8, carbs: 31.0, fat: 0.9 },
+      { id: "pas_ckd_penne", name: "پاستا پنه آب‌پز شده (بدون سس)", category: "pasta_cooked", state: "cooked", calories: 155, protein: 5.5, carbs: 30.5, fat: 0.8 },
+      { id: "pas_ckd_wholegrain", name: "پاستا و ماکارونی سبوس‌دار پخته", category: "pasta_cooked", state: "cooked", calories: 145, protein: 6.5, carbs: 28.5, fat: 1.2 },
+      { id: "pas_ckd_lasagna_sheet", name: "ورق لازانیا پخته شده ساده", category: "pasta_cooked", state: "cooked", calories: 140, protein: 5.0, carbs: 27.5, fat: 0.9 },
+      { id: "pas_ckd_instant_noodle", name: "نودل فوری پخته شده با آب (بدون ادویه روغنی)", category: "pasta_cooked", state: "cooked", calories: 142, protein: 3.2, carbs: 21.0, fat: 5.2 },
+      { id: "pas_ckd_rice_noodle", name: "نودل برنج پخته شده", category: "pasta_cooked", state: "cooked", calories: 109, protein: 1.0, carbs: 25.0, fat: 0.2 },
+
+      // ۴. حبوبات خام
+      { id: "leg_raw_lentil_brown", name: "عدس قهوه‌ای/سبز (خام)", category: "legumes_raw", state: "raw", calories: 353, protein: 25.8, carbs: 60.1, fat: 1.1 },
+      { id: "leg_raw_lentil_red", name: "دال عدس قرمز (خام)", category: "legumes_raw", state: "raw", calories: 345, protein: 24.5, carbs: 59.5, fat: 1.0 },
+      { id: "leg_raw_chickpea", name: "نخود آبگوشتی درشت (خام)", category: "legumes_raw", state: "raw", calories: 364, protein: 19.3, carbs: 60.6, fat: 6.0 },
+      { id: "leg_raw_split_pea", name: "لپه زرد (خام)", category: "legumes_raw", state: "raw", calories: 341, protein: 24.5, carbs: 60.0, fat: 1.2 },
+      { id: "leg_raw_pinto", name: "لوبیا چیتی (خام)", category: "legumes_raw", state: "raw", calories: 347, protein: 21.4, carbs: 62.5, fat: 1.2 },
+      { id: "leg_raw_red_kidney", name: "لوبیا قرمز کپسولی (خام)", category: "legumes_raw", state: "raw", calories: 333, protein: 23.6, carbs: 60.0, fat: 0.8 },
+      { id: "leg_raw_white_bean", name: "لوبیا سفید آبگوشتی (خام)", category: "legumes_raw", state: "raw", calories: 335, protein: 23.0, carbs: 61.0, fat: 0.9 },
+      { id: "leg_raw_blackeye", name: "لوبیا چشم‌بلبلی (خام)", category: "legumes_raw", state: "raw", calories: 336, protein: 23.5, carbs: 60.0, fat: 1.3 },
+      { id: "leg_raw_black_bean", name: "لوبیا سیاه (خام)", category: "legumes_raw", state: "raw", calories: 341, protein: 21.6, carbs: 62.4, fat: 1.4 },
+      { id: "leg_raw_mung", name: "ماش سبز (خام)", category: "legumes_raw", state: "raw", calories: 347, protein: 23.8, carbs: 62.6, fat: 1.1 },
+      { id: "leg_raw_fava", name: "باقلا زرد خشک (خام)", category: "legumes_raw", state: "raw", calories: 341, protein: 26.1, carbs: 58.3, fat: 1.5 },
+      { id: "leg_raw_green_fava", name: "باقلا سبز پوست‌کنده (خام)", category: "legumes_raw", state: "raw", calories: 88, protein: 7.9, carbs: 15.0, fat: 0.7 },
+
+      // ۵. حبوبات پخته شده
+      { id: "leg_ckd_lentil_brown", name: "عدس آب‌پز پخته شده", category: "legumes_cooked", state: "cooked", calories: 116, protein: 9.0, carbs: 20.1, fat: 0.4 },
+      { id: "leg_ckd_lentil_red", name: "دال عدس قرمز پخته شده", category: "legumes_cooked", state: "cooked", calories: 112, protein: 8.5, carbs: 19.5, fat: 0.4 },
+      { id: "leg_ckd_chickpea", name: "نخود آب‌پز پخته شده", category: "legumes_cooked", state: "cooked", calories: 164, protein: 8.9, carbs: 27.4, fat: 2.6 },
+      { id: "leg_ckd_split_pea", name: "لپه پخته شده", category: "legumes_cooked", state: "cooked", calories: 118, protein: 8.3, carbs: 21.0, fat: 0.5 },
+      { id: "leg_ckd_pinto", name: "لوبیا چیتی آب‌پز ساده", category: "legumes_cooked", state: "cooked", calories: 139, protein: 9.7, carbs: 25.1, fat: 0.5 },
+      { id: "leg_ckd_red_kidney", name: "لوبیا قرمز پخته شده", category: "legumes_cooked", state: "cooked", calories: 127, protein: 8.7, carbs: 22.8, fat: 0.5 },
+      { id: "leg_ckd_white_bean", name: "لوبیا سفید پخته شده", category: "legumes_cooked", state: "cooked", calories: 139, protein: 9.7, carbs: 25.0, fat: 0.4 },
+      { id: "leg_ckd_blackeye", name: "لوبیا چشم‌بلبلی پخته شده", category: "legumes_cooked", state: "cooked", calories: 116, protein: 7.7, carbs: 21.0, fat: 0.5 },
+      { id: "leg_ckd_black_bean", name: "لوبیا سیاه پخته شده", category: "legumes_cooked", state: "cooked", calories: 132, protein: 8.9, carbs: 23.7, fat: 0.5 },
+      { id: "leg_ckd_mung", name: "ماش پخته شده", category: "legumes_cooked", state: "cooked", calories: 105, protein: 7.0, carbs: 19.1, fat: 0.4 },
+      { id: "leg_ckd_fava", name: "باقلا سبز پخته با نمک", category: "legumes_cooked", state: "cooked", calories: 110, protein: 7.6, carbs: 19.5, fat: 0.5 },
+
+      // ۶. پروتئین‌های خام
       { id: "p_raw_chick_breast", name: "سینه مرغ (خام، بدون پوست)", category: "protein_raw", state: "raw", calories: 120, protein: 22.5, carbs: 0, fat: 2.6 },
       { id: "p_raw_chick_fillet", name: "فیله مرغ (خام)", category: "protein_raw", state: "raw", calories: 110, protein: 23.0, carbs: 0, fat: 1.8 },
       { id: "p_raw_chick_thigh", name: "ران مرغ (خام، بدون پوست)", category: "protein_raw", state: "raw", calories: 145, protein: 19.5, carbs: 0, fat: 7.2 },
@@ -906,16 +984,14 @@
       { id: "p_raw_egg_yolk", name: "زرده تخم‌مرغ (خام)", category: "protein_raw", state: "raw", calories: 322, protein: 15.9, carbs: 3.6, fat: 26.5 },
       { id: "p_raw_quail_egg", name: "تخم بلدرچین (خام)", category: "protein_raw", state: "raw", calories: 158, protein: 13.0, carbs: 0.4, fat: 11.1 },
 
-      // ۲. پروتئین‌های پخته
+      // ۷. پروتئین‌های پخته
       { id: "p_ckd_chick_breast", name: "سینه مرغ (آب‌پز / گریل)", category: "protein_cooked", state: "cooked", calories: 165, protein: 31.0, carbs: 0, fat: 3.6 },
       { id: "p_ckd_chick_thigh", name: "ران مرغ (پخته بی‌پوست)", category: "protein_cooked", state: "cooked", calories: 190, protein: 24.5, carbs: 0, fat: 9.5 },
       { id: "p_ckd_beef", name: "گوشت گوساله آب‌پز ساده", category: "protein_cooked", state: "cooked", calories: 210, protein: 30.0, carbs: 0, fat: 9.0 },
       { id: "p_ckd_egg", name: "تخم‌مرغ آب‌پز سفت", category: "protein_cooked", state: "cooked", calories: 155, protein: 13.0, carbs: 1.1, fat: 11.0 },
-      { id: "p_ckd_tuna_water", name: "کنسرو تن ماهی در آب‌نمک", category: "protein_cooked", state: "cooked", calories: 116, protein: 25.5, carbs: 0, fat: 0.8 },
-      { id: "p_ckd_tuna_oil", name: "کنسرو تن ماهی در روغن", category: "protein_cooked", state: "cooked", calories: 198, protein: 29.0, carbs: 0, fat: 8.2 },
       { id: "p_ckd_soya", name: "سویا بافت‌دار پخته (بدون روغن)", category: "protein_cooked", state: "cooked", calories: 125, protein: 16.0, carbs: 9.0, fat: 1.0 },
 
-      // ۳. میوه‌جات
+      // ۸. میوه‌جات
       { id: "fr_apple_red", name: "سیب درختی سرخ", category: "fruits", state: "raw", calories: 52, protein: 0.3, carbs: 13.8, fat: 0.2 },
       { id: "fr_apple_green", name: "سیب سبز ترش", category: "fruits", state: "raw", calories: 50, protein: 0.4, carbs: 13.5, fat: 0.1 },
       { id: "fr_banana", name: "موز تازه", category: "fruits", state: "raw", calories: 89, protein: 1.1, carbs: 22.8, fat: 0.3 },
@@ -945,7 +1021,7 @@
       { id: "fr_blueberry", name: "بلوبری / تمشک آبی", category: "fruits", state: "raw", calories: 57, protein: 0.7, carbs: 14.5, fat: 0.3 },
       { id: "fr_coconut", name: "گوشت نارگیل تازه", category: "fruits", state: "raw", calories: 354, protein: 3.3, carbs: 15.2, fat: 33.5 },
 
-      // ۴. سبزیجات و صیفی‌جات
+      // ۹. سبزیجات و صیفی‌جات
       { id: "vg_tomato", name: "گوجه‌فرنگی خام", category: "vegetables", state: "raw", calories: 18, protein: 0.9, carbs: 3.9, fat: 0.2 },
       { id: "vg_cucumber", name: "خیار بوته‌ای با پوست", category: "vegetables", state: "raw", calories: 15, protein: 0.7, carbs: 3.6, fat: 0.1 },
       { id: "vg_lettuce", name: "کاهو رسمی / پیچ", category: "vegetables", state: "raw", calories: 15, protein: 1.4, carbs: 2.9, fat: 0.2 },
@@ -970,7 +1046,7 @@
       { id: "vg_garlic", name: "سیر تازه", category: "vegetables", state: "raw", calories: 149, protein: 6.4, carbs: 33.1, fat: 0.5 },
       { id: "vg_asparagus", name: "مارچوبه تازه", category: "vegetables", state: "raw", calories: 20, protein: 2.2, carbs: 3.9, fat: 0.1 },
 
-      // ۵. خشکبار و مغزها
+      // ۱۰. خشکبار و مغزها
       { id: "nt_walnut", name: "گردو خام ایرانی", category: "nuts", state: "raw", calories: 654, protein: 15.2, carbs: 13.7, fat: 65.2 },
       { id: "nt_almond", name: "بادام درختی خام", category: "nuts", state: "raw", calories: 579, protein: 21.2, carbs: 21.6, fat: 49.9 },
       { id: "nt_pistachio", name: "پسته خام خندان", category: "nuts", state: "raw", calories: 560, protein: 20.2, carbs: 27.2, fat: 45.3 },
@@ -990,25 +1066,18 @@
       { id: "nt_dates_piaram", name: "خرما پیارم اعلا", category: "nuts", state: "raw", calories: 282, protein: 2.5, carbs: 75.0, fat: 0.4 },
       { id: "nt_dates_mozafati", name: "خرما مضافتی بم", category: "nuts", state: "raw", calories: 277, protein: 1.8, carbs: 75.0, fat: 0.2 },
 
-      // ۶. غلات خام و حبوبات
+      // ۱۱. غلات خام
       { id: "gr_raw_rice_tarem", name: "برنج سفید طارم/هاشمی (خام)", category: "grains_raw", state: "raw", calories: 365, protein: 7.1, carbs: 80.0, fat: 0.7 },
       { id: "gr_raw_rice_brown", name: "برنج قهوه‌ای (خام)", category: "grains_raw", state: "raw", calories: 360, protein: 7.5, carbs: 77.0, fat: 2.5 },
       { id: "gr_raw_rice_basmati", name: "برنج باسماتی درجه یک (خام)", category: "grains_raw", state: "raw", calories: 355, protein: 8.0, carbs: 78.0, fat: 0.6 },
       { id: "gr_raw_oats", name: "جو دوسر پرک (خام)", category: "grains_raw", state: "raw", calories: 389, protein: 16.9, carbs: 66.3, fat: 6.9 },
       { id: "gr_raw_quinoa", name: "دانه کینوا (خام)", category: "grains_raw", state: "raw", calories: 368, protein: 14.1, carbs: 64.2, fat: 6.1 },
       { id: "gr_raw_potato", name: "سیب‌زمینی خام با پوست", category: "grains_raw", state: "raw", calories: 77, protein: 2.0, carbs: 17.5, fat: 0.1 },
-      { id: "gr_raw_lentils", name: "عدس ریز/درشت (خام)", category: "grains_raw", state: "raw", calories: 353, protein: 25.8, carbs: 60.1, fat: 1.1 },
-      { id: "gr_raw_pinto", name: "لوبیا چیتی (خام)", category: "grains_raw", state: "raw", calories: 347, protein: 21.4, carbs: 62.5, fat: 1.2 },
-      { id: "gr_raw_chickpea", name: "نخود آبگوشتی (خام)", category: "grains_raw", state: "raw", calories: 364, protein: 19.3, carbs: 60.6, fat: 6.0 },
-      { id: "gr_raw_splitpeas", name: "لپه زرد (خام)", category: "grains_raw", state: "raw", calories: 341, protein: 24.5, carbs: 60.0, fat: 1.2 },
-      { id: "gr_raw_redbeans", name: "لوبیا قرمز (خام)", category: "grains_raw", state: "raw", calories: 333, protein: 23.6, carbs: 60.0, fat: 0.8 },
-      { id: "gr_raw_mung", name: "ماش سبز (خام)", category: "grains_raw", state: "raw", calories: 347, protein: 23.8, carbs: 62.6, fat: 1.1 },
 
-      // ۷. نان‌ها و غلات پخته
+      // ۱۲. نان‌ها و غلات پخته
       { id: "gr_ckd_rice_kateh", name: "برنج سفید کته (کم‌روغن)", category: "grains_cooked", state: "cooked", calories: 130, protein: 2.7, carbs: 28.2, fat: 0.3 },
       { id: "gr_ckd_rice_chelo", name: "چلو آبکش رستورانی با روغن", category: "grains_cooked", state: "cooked", calories: 165, protein: 2.5, carbs: 29.0, fat: 4.5 },
       { id: "gr_ckd_potato", name: "سیب‌زمینی آب‌پز ساده", category: "grains_cooked", state: "cooked", calories: 87, protein: 1.9, carbs: 20.1, fat: 0.1 },
-      { id: "gr_ckd_pasta", name: "ماکارونی پخته بدون سس", category: "grains_cooked", state: "cooked", calories: 158, protein: 5.8, carbs: 31.0, fat: 0.9 },
       { id: "br_sangak", name: "نان سنگک سنتی", category: "grains_cooked", state: "cooked", calories: 260, protein: 9.0, carbs: 50.0, fat: 2.0 },
       { id: "br_barbari", name: "نان بربری سنتی", category: "grains_cooked", state: "cooked", calories: 265, protein: 8.8, carbs: 52.0, fat: 2.2 },
       { id: "br_lavash", name: "نان لواش", category: "grains_cooked", state: "cooked", calories: 280, protein: 8.5, carbs: 57.0, fat: 1.5 },
@@ -1016,14 +1085,14 @@
       { id: "br_toast_brown", name: "نان تست جو سبوس‌دار", category: "grains_cooked", state: "cooked", calories: 247, protein: 11.0, carbs: 43.0, fat: 3.5 },
       { id: "br_baguette", name: "نان باگت فرانسوی", category: "grains_cooked", state: "cooked", calories: 275, protein: 9.0, carbs: 54.0, fat: 2.1 },
 
-      // ۸. روغن‌ها و چربی‌ها
+      // ۱۳. روغن‌ها و چربی‌ها
       { id: "ft_oliveoil", name: "روغن زیتون فرابکر", category: "fats", state: "raw", calories: 884, protein: 0, carbs: 0, fat: 100.0 },
       { id: "ft_sesameoil", name: "روغن کنجد خالص", category: "fats", state: "raw", calories: 884, protein: 0, carbs: 0, fat: 100.0 },
       { id: "ft_butter", name: "کره حیوانی پاستوریزه", category: "fats", state: "cooked", calories: 717, protein: 0.9, carbs: 0.1, fat: 81.0 },
       { id: "ft_ghee", name: "روغن زرد / روغن حیوانی کرمانشاهی", category: "fats", state: "cooked", calories: 900, protein: 0, carbs: 0, fat: 100.0 },
       { id: "ft_peanutbutter", name: "کره بادام زمینی طبیعی", category: "fats", state: "cooked", calories: 588, protein: 25.0, carbs: 20.0, fat: 50.0 },
 
-      // ۹. لبنیات
+      // ۱۴. لبنیات
       { id: "dy_milk_lowfat", name: "شیر کم‌چرب (۱.۵٪)", category: "dairy", state: "cooked", calories: 46, protein: 3.3, carbs: 4.8, fat: 1.5 },
       { id: "dy_milk_fullfat", name: "شیر پرچرب (۳٪)", category: "dairy", state: "cooked", calories: 61, protein: 3.2, carbs: 4.7, fat: 3.3 },
       { id: "dy_yogurt_greek", name: "ماست یونانی پرپروتئین", category: "dairy", state: "cooked", calories: 73, protein: 10.0, carbs: 3.8, fat: 1.9 },
@@ -1031,7 +1100,7 @@
       { id: "dy_dough", name: "دوغ سنتی بدون گاز", category: "dairy", state: "cooked", calories: 28, protein: 1.5, carbs: 2.2, fat: 1.2 },
       { id: "dy_kashk", name: "کشک پاستوریزه غلیظ", category: "dairy", state: "cooked", calories: 120, protein: 12.0, carbs: 6.0, fat: 4.5 },
 
-      // ۱۰. غذاهای ایرانی و ترکیبی
+      // ۱۵. غذاهای سنتی و ایرانی
       { id: "ir_ghormeh", name: "خورشت قورمه‌سبزی", category: "iranian", state: "cooked", calories: 155, protein: 8.5, carbs: 6.5, fat: 11.0 },
       { id: "ir_gheimeh", name: "خورشت قیمه سیب‌زمینی", category: "iranian", state: "cooked", calories: 170, protein: 8.0, carbs: 13.0, fat: 9.5 },
       { id: "ir_fesenjan", name: "خورشت فسنجان با مرغ", category: "iranian", state: "cooked", calories: 280, protein: 9.0, carbs: 14.0, fat: 21.0 },
@@ -1060,7 +1129,7 @@
 
     class NutritionOSEngine {
       constructor() {
-        this.STORAGE_KEY = "nutrition_os_data_v5";
+        this.STORAGE_KEY = "nutrition_os_data_v6";
         this.state = this.loadState();
         this.currentDate = this.getTodayDateString();
         this.charts = {};
@@ -1069,7 +1138,7 @@
 
       getDefaultState() {
         return {
-          version: "5.0",
+          version: "6.0",
           theme: "light",
           cloudSyncId: "",
           profile: { name: "کاربر", gender: "male", age: 30, height: 175, weight: 78.0, activityLevel: 1.375, goal: "cut" },
@@ -1096,7 +1165,7 @@
             return decoded;
           }
 
-          const raw = localStorage.getItem(this.STORAGE_KEY) || localStorage.getItem("nutrition_os_data_v4") || localStorage.getItem("nutrition_os_data_v3");
+          const raw = localStorage.getItem(this.STORAGE_KEY) || localStorage.getItem("nutrition_os_data_v5") || localStorage.getItem("nutrition_os_data_v4");
           if (!raw) return this.getDefaultState();
           return { ...this.getDefaultState(), ...JSON.parse(raw) };
         } catch { return this.getDefaultState(); }
@@ -1660,7 +1729,7 @@
         const container = document.getElementById('rawIngredientsRowsContainer');
         if (container.children.length > 0) return;
         this.addIngredientRowItem('p_raw_chick_breast');
-        this.addIngredientRowItem('gr_raw_rice_tarem');
+        this.addIngredientRowItem('pas_raw_spaghetti');
         this.addIngredientRowItem('ft_oliveoil');
       }
 
@@ -1688,7 +1757,7 @@
           if (!q) { dropdown.style.display = 'none'; return; }
           const matches = this.engine.getAllFoods().filter(f => f.name.toLowerCase().includes(q));
           dropdown.innerHTML = '';
-          matches.slice(0, 20).forEach(f => {
+          matches.slice(0, 25).forEach(f => {
             const item = document.createElement('div');
             item.className = 'search-item';
             item.innerHTML = `<div><strong>${f.name}</strong> (${f.state === 'raw' ? 'خام' : 'پخته'})</div><div style="font-size:0.75rem;">${f.calories} kcal | P:${f.protein}g</div>`;
