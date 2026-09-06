@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>محاسبه‌گر هوشمند کالری و ماکروها</title>
+  <style>
+    :root {
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --bg-main: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --danger: #ef4444;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.07);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Vazirmatn', Tahoma, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 24px 16px;
+    }
+
+    .container {
+      max-width: 1060px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    header h1 {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: #065f46;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* تب‌های ناوبری */
+    .tabs-nav {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 2px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -4px;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      color: var(--primary-dark);
+      border-bottom-color: var(--primary);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .grid-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    @media (min-width: 768px) {
+      .grid-layout {
+        grid-template-columns: 380px 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      padding: 20px;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #1e293b;
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background-color: #fdfdfd;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    }
+
+    .btn {
+      display: inline-block;
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 11px 16px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      text-align: center;
+    }
+
+    .btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #475569;
+      margin-top: 8px;
+    }
+
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: #334155;
+      width: auto;
+      padding: 7px 14px;
+      font-size: 0.85rem;
+    }
+
+    .btn-outline:hover {
+      background: #f8fafc;
+    }
+
+    .macro-preview {
+      background: #f8fafc;
+      border: 1px dashed var(--border-color);
+      border-radius: 8px;
+      padding: 10px;
+      margin: 12px 0 16px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .metric-card {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 8px;
+      text-align: center;
+    }
+
+    .metric-card.calories {
+      background: #ecfdf5;
+      border-color: #a7f3d0;
+      grid-column: span 4;
+    }
+
+    @media (min-width: 480px) {
+      .metric-card.calories {
+        grid-column: span 1;
+      }
+    }
+
+    .metric-value {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .metric-card.calories .metric-value {
+      color: #047857;
+    }
+
+    .metric-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: white;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+      font-size: 0.88rem;
+    }
+
+    th {
+      background: #f1f5f9;
+      padding: 10px 12px;
+      font-weight: 700;
+      color: #334155;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .btn-delete {
+      background: transparent;
+      border: none;
+      color: var(--danger);
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .btn-delete:hover {
+      background: #fee2e2;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* بخش نمایش داده خام */
+    .raw-data-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-raw { background: #fef3c7; color: #92400e; }
+    .badge-cooked { background: #dbeafe; color: #1e40af; }
+    .badge-basic { background: #f3e8ff; color: #6b21a8; }
+
+    pre.code-block {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 16px;
+      border-radius: 8px;
+      direction: ltr;
+      text-align: left;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.85rem;
+      overflow-x: auto;
+      max-height: 480px;
+    }
+
+    /* مودال */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: var(--radius);
+      max-width: 440px;
+      width: 100%;
+      padding: 20px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .modal-header h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .btn-close {
+      background: transparent;
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>محاسبه‌گر کالری و ارزش غذایی</h1>
+      <p>محاسبه آنی کالری و ماکروها همراه با بانک اقلام خام و پخته (بدون هزینه و آفلاین)</p>
+    </header>
+
+    <!-- تب‌های بالای صفحه -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('calculatorTab')">محاسبه‌گر روزانه</button>
+      <button class="tab-btn" onclick="switchTab('rawTableTab')">جدول بانک داده غذاها</button>
+      <button class="tab-btn" onclick="switchTab('jsonTab')">کد و داده خام (JSON / JS)</button>
+    </div>
+
+    <!-- تب ۱: محاسبه‌گر -->
+    <div id="calculatorTab" class="tab-content active">
+      <div class="grid-layout">
+        <!-- ستون فرم -->
+        <section class="card">
+          <h2 class="card-title">افزودن به بشقاب امروز</h2>
+          
+          <div class="form-group">
+            <label for="foodSelect">انتخاب ماده غذایی (خام / پخته)</label>
+            <select id="foodSelect"></select>
+          </div>
+
+          <div class="form-group">
+            <label for="weightInput">وزن مصرفی (گرم)</label>
+            <input type="number" id="weightInput" value="100" min="1" step="5">
+          </div>
+
+          <div class="form-group">
+            <label for="mealSelect">وعده غذایی</label>
+            <select id="mealSelect">
+              <option value="صبحانه">صبحانه</option>
+              <option value="ناهار" selected>ناهار</option>
+              <option value="شام">شام</option>
+              <option value="میان‌وعده">میان‌وعده</option>
+            </select>
+          </div>
+
+          <div class="macro-preview" id="previewBox">
+            در ۱۰۰ گرم: در حال بارگذاری...
+          </div>
+
+          <button class="btn" id="btnAddFood">افزودن غذا به لیست</button>
+          <button class="btn btn-secondary" id="btnOpenModal">+ تعریف ماده غذایی دلخواه</button>
+        </section>
+
+        <!-- ستون گزارش روزانه -->
+        <section class="card">
+          <h2 class="card-title">مجموع دریافتی روز</h2>
+
+          <div class="summary-cards">
+            <div class="metric-card calories">
+              <div class="metric-value" id="sumCalories">0</div>
+              <div class="metric-label">کالری کل (kcal)</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="sumProtein">0g</div>
+              <div class="metric-label">پروتئین</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="sumCarbs">0g</div>
+              <div class="metric-label">کربوهیدرات</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="sumFat">0g</div>
+              <div class="metric-label">چربی</div>
+            </div>
+          </div>
+
+          <div class="table-container" style="max-height: 380px;">
+            <table id="logTable">
+              <thead>
+                <tr>
+                  <th>وعده</th>
+                  <th>ماده غذایی</th>
+                  <th>وزن (g)</th>
+                  <th>کالری</th>
+                  <th>ماکرو (P / C / F)</th>
+                  <th>عملیات</th>
+                </tr>
+              </thead>
+              <tbody id="logBody"></tbody>
+            </table>
+            <div id="emptyMessage" class="empty-state">هنوز هیچ ماده غذایی برای امروز ثبت نشده است.</div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- تب ۲: جدول کامل مواد غذایی با فیلتر -->
+    <div id="rawTableTab" class="tab-content">
+      <section class="card">
+        <div class="raw-data-header">
+          <div>
+            <h2 class="card-title" style="border:none; margin-bottom:0; padding-bottom:0;">بانک جامع اطلاعات غذایی (در هر ۱۰۰ گرم)</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">شامل انواع مواد خام، حبوبات، گوشت، سبزیجات و اقلام پخته</p>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="tableSearch" placeholder="جستجوی غذا..." style="width: 200px; padding: 6px 10px;">
+            <button class="btn btn-outline" onclick="resetDatabasePrompt()">بازنشانی پیش‌فرض</button>
+          </div>
+        </div>
+
+        <div class="table-container" style="max-height: 520px;">
+          <table>
+            <thead>
+              <tr>
+                <th>نام ماده غذایی</th>
+                <th>حالت</th>
+                <th>کالری (kcal)</th>
+                <th>پروتئین (g)</th>
+                <th>کربوهیدرات (g)</th>
+                <th>چربی (g)</th>
+              </tr>
+            </thead>
+            <tbody id="fullDbBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- تب ۳: کد خام JSON برای استفاده یا کپی -->
+    <div id="jsonTab" class="tab-content">
+      <section class="card">
+        <div class="raw-data-header">
+          <div>
+            <h2 class="card-title" style="border:none; margin-bottom:0; padding-bottom:0;">داده‌های خام (JSON Format)</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">می‌توانید مستقیماً این ساختار آرایه را کپی کرده و در پروژه‌های دیگر یا دیتابیس استفاده کنید.</p>
+          </div>
+          <button class="btn btn-outline" onclick="copyJsonData()">کپی متن JSON</button>
+        </div>
+        <pre class="code-block" id="jsonCodeBlock"></pre>
+      </section>
+    </div>
+
+  </div>
+
+  <!-- مودال افزودن غذای دلخواه -->
+  <div class="modal-backdrop" id="customModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>ثبت ماده غذایی جدید</h3>
+        <button class="btn-close" id="btnCloseModal">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="newFoodName">نام ماده غذایی (قید خام یا پخته)</label>
+        <input type="text" id="newFoodName" placeholder="مثال: لوبیا چیتی خام">
+      </div>
+      <div class="form-group">
+        <label for="newState">حالت / دسته‌بندی</label>
+        <select id="newState">
+          <option value="raw">خام</option>
+          <option value="cooked">پخته / آماده</option>
+          <option value="basic">پایه / متفرقه</option>
+        </select>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="form-group">
+          <label for="newCal">کالری (kcal)</label>
+          <input type="number" id="newCal" min="0">
+        </div>
+        <div class="form-group">
+          <label for="newProt">پروتئین (g)</label>
+          <input type="number" id="newProt" min="0" step="0.1">
+        </div>
+        <div class="form-group">
+          <label for="newCarb">کربوهیدرات (g)</label>
+          <input type="number" id="newCarb" min="0" step="0.1">
+        </div>
+        <div class="form-group">
+          <label for="newFat">چربی (g)</label>
+          <input type="number" id="newFat" min="0" step="0.1">
+        </div>
+      </div>
+      <button class="btn" id="btnSaveCustomFood">ذخیره در پایگاه داده</button>
+    </div>
+  </div>
+
+  <script>
+    // پایگاه جامع داده‌های غذایی (شامل تفکیک دقیق اقلام خام و پخته در هر ۱۰۰ گرم)
+    const defaultFoods = [
+      // گوشت و پروتئین خام
+      { name: "سینه مرغ (خام، بدون پوست)", state: "raw", cal: 120, prot: 22.5, carb: 0, fat: 2.6 },
+      { name: "ران مرغ (خام، بدون پوست)", state: "raw", cal: 145, prot: 19.5, carb: 0, fat: 7.2 },
+      { name: "گوشت راسته گوساله (خام)", state: "raw", cal: 135, prot: 22.0, carb: 0, fat: 4.8 },
+      { name: "گوشت چرخ‌کرده مخلوط (خام)", state: "raw", cal: 250, prot: 17.5, carb: 0, fat: 20.0 },
+      { name: "فیله ماهی قزل‌آلا (خام)", state: "raw", cal: 140, prot: 20.5, carb: 0, fat: 6.3 },
+      { name: "میگو (خام)", state: "raw", cal: 85, prot: 20.1, carb: 0.2, fat: 0.5 },
+      { name: "تخم مرغ (خام کامل)", state: "raw", cal: 143, prot: 12.6, carb: 0.7, fat: 9.5 },
+      { name: "سفیده تخم مرغ (خام)", state: "raw", cal: 52, prot: 11.0, carb: 0.7, fat: 0.2 },
+      
+      // غلات، حبوبات و دانه‌های خام
+      { name: "برنج سفید طارم/هاشمی (خام)", state: "raw", cal: 365, prot: 7.1, carb: 80.0, fat: 0.7 },
+      { name: "برنج قهوه‌ای (خام)", state: "raw", cal: 360, prot: 7.5, carb: 77.0, fat: 2.5 },
+      { name: "جو دوسر پرک (خام)", state: "raw", cal: 389, prot: 16.9, carb: 66.3, fat: 6.9 },
+      { name: "کینوا (خام)", state: "raw", cal: 368, prot: 14.1, carb: 64.2, fat: 6.1 },
+      { name: "عدس (خام)", state: "raw", cal: 353, prot: 25.8, carb: 60.1, fat: 1.1 },
+      { name: "لپه (خام)", state: "raw", cal: 341, prot: 24.5, carb: 60.0, fat: 1.2 },
+      { name: "نخود آبگوشتی (خام)", state: "raw", cal: 364, prot: 19.3, carb: 60.6, fat: 6.0 },
+      { name: "لوبیا قرمز (خام)", state: "raw", cal: 333, prot: 23.6, carb: 60.0, fat: 0.8 },
+      { name: "لوبیا چیتی (خام)", state: "raw", cal: 347, prot: 21.4, carb: 62.5, fat: 1.2 },
+
+      // سبزیجات و صیفی‌جات خام
+      { name: "سیب‌زمینی (خام با پوست)", state: "raw", cal: 77, prot: 2.0, carb: 17.5, fat: 0.1 },
+      { name: "گوجه فرنگی (خام)", state: "raw", cal: 18, prot: 0.9, carb: 3.9, fat: 0.2 },
+      { name: "خیار (خام با پوست)", state: "raw", cal: 15, prot: 0.7, carb: 3.6, fat: 0.1 },
+      { name: "پیاز سفید/قرمز (خام)", state: "raw", cal: 40, prot: 1.1, carb: 9.3, fat: 0.1 },
+      { name: "هویج (خام)", state: "raw", cal: 41, prot: 0.9, carb: 9.6, fat: 0.2 },
+      { name: "قارچ دکمه‌ای (خام)", state: "raw", cal: 22, prot: 3.1, carb: 3.3, fat: 0.3 },
+      { name: "اسفناج (خام)", state: "raw", cal: 23, prot: 2.9, carb: 3.6, fat: 0.4 },
+      { name: "کلم بروکلی (خام)", state: "raw", cal: 34, prot: 2.8, carb: 6.6, fat: 0.4 },
+      { name: "کاهو رسمی (خام)", state: "raw", cal: 15, prot: 1.4, carb: 2.9, fat: 0.2 },
+
+      // مغزها و دانه‌های خام
+      { name: "بادام درختی خام", state: "raw", cal: 579, prot: 21.2, carb: 21.6, fat: 49.9 },
+      { name: "گردو خام", state: "raw", cal: 654, prot: 15.2, carb: 13.7, fat: 65.2 },
+      { name: "پسته خام", state: "raw", cal: 560, prot: 20.2, carb: 27.2, fat: 45.3 },
+
+      // اقلام پخته و فرآوری‌شده رایج
+      { name: "سینه مرغ آب‌پز/گریل", state: "cooked", cal: 165, prot: 31.0, carb: 0, fat: 3.6 },
+      { name: "برنج سفید کته (کم روغن)", state: "cooked", cal: 130, prot: 2.7, carb: 28.2, fat: 0.3 },
+      { name: "سیب‌زمینی آب‌پز", state: "cooked", cal: 87, prot: 1.9, carb: 20.1, fat: 0.1 },
+      { name: "تخم مرغ آب‌پز سفت", state: "cooked", cal: 155, prot: 13.0, carb: 1.1, fat: 11.0 },
+      { name: "عدس پخته", state: "cooked", cal: 116, prot: 9.0, carb: 20.1, fat: 0.4 },
+      { name: "لوبیا چیتی پخته", state: "cooked", cal: 139, prot: 9.7, carb: 25.1, fat: 0.5 },
+      { name: "نان سنگک", state: "cooked", cal: 260, prot: 9.0, carb: 50.0, fat: 2.0 },
+      { name: "نان لواش", state: "cooked", cal: 280, prot: 8.5, carb: 57.0, fat: 1.5 },
+      { name: "نان بربری", state: "cooked", cal: 265, prot: 8.8, carb: 52.0, fat: 2.2 },
+
+      // چربی و لبنیات
+      { name: "روغن زیتون فرابکر", state: "basic", cal: 884, prot: 0, carb: 0, fat: 100 },
+      { name: "روغن کنجد", state: "basic", cal: 884, prot: 0, carb: 0, fat: 100 },
+      { name: "شیر کم‌چرب (۱.۵٪)", state: "basic", cal: 46, prot: 3.3, carb: 4.8, fat: 1.5 },
+      { name: "ماست یونانی کم‌چرب", state: "basic", cal: 73, prot: 10.0, carb: 3.8, fat: 1.9 },
+      { name: "پنیر فتا / صبحانه پاستوریزه", state: "basic", cal: 250, prot: 14.0, carb: 2.0, fat: 21.0 }
+    ];
+
+    // حافظه LocalStorage
+    let foodList = JSON.parse(localStorage.getItem('cal_food_db_v2')) || defaultFoods;
+    let dailyLogs = JSON.parse(localStorage.getItem('cal_daily_logs_v2')) || [];
+
+    // عناصر صفحه
+    const foodSelect = document.getElementById('foodSelect');
+    const weightInput = document.getElementById('weightInput');
+    const mealSelect = document.getElementById('mealSelect');
+    const previewBox = document.getElementById('previewBox');
+    const btnAddFood = document.getElementById('btnAddFood');
+    const logBody = document.getElementById('logBody');
+    const emptyMessage = document.getElementById('emptyMessage');
+
+    const sumCalories = document.getElementById('sumCalories');
+    const sumProtein = document.getElementById('sumProtein');
+    const sumCarbs = document.getElementById('sumCarbs');
+    const sumFat = document.getElementById('sumFat');
+
+    const fullDbBody = document.getElementById('fullDbBody');
+    const tableSearch = document.getElementById('tableSearch');
+    const jsonCodeBlock = document.getElementById('jsonCodeBlock');
+
+    // مودال
+    const customModal = document.getElementById('customModal');
+    const btnOpenModal = document.getElementById('btnOpenModal');
+    const btnCloseModal = document.getElementById('btnCloseModal');
+    const btnSaveCustomFood = document.getElementById('btnSaveCustomFood');
+
+    // جابجایی تب‌ها
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+
+      if (tabId === 'rawTableTab') renderFullDatabaseTable();
+      if (tabId === 'jsonTab') renderJsonViewer();
+    }
+
+    // مقداردهی اولیه دراپ‌داون فرم با تفکیک گروه‌بندی (optgroup)
+    function populateFoodDropdown() {
+      foodSelect.innerHTML = '';
+      
+      const groupRaw = document.createElement('optgroup');
+      groupRaw.label = "--- مواد خام و پایه ---";
+      
+      const groupCooked = document.createElement('optgroup');
+      groupCooked.label = "--- مواد پخته و نان‌ها ---";
+      
+      const groupOther = document.createElement('optgroup');
+      groupOther.label = "--- لبنیات، چربی‌ها و سایر ---";
+
+      foodList.forEach((item, index) => {
+        const opt = document.createElement('option');
+        opt.value = index;
+        opt.textContent = item.name;
+
+        if (item.state === 'raw') groupRaw.appendChild(opt);
+        else if (item.state === 'cooked') groupCooked.appendChild(opt);
+        else groupOther.appendChild(opt);
+      });
+
+      if (groupRaw.children.length) foodSelect.appendChild(groupRaw);
+      if (groupCooked.children.length) foodSelect.appendChild(groupCooked);
+      if (groupOther.children.length) foodSelect.appendChild(groupOther);
+
+      updatePreview();
+    }
+
+    function updatePreview() {
+      const idx = foodSelect.value;
+      if (idx === undefined || idx === '') return;
+      const f = foodList[idx];
+      const stateBadge = f.state === 'raw' ? ' [خام]' : (f.state === 'cooked' ? ' [پخته]' : '');
+      previewBox.innerHTML = `در ۱۰۰ گرم <b>${f.name}</b>${stateBadge}: کالری: <b>${f.cal}</b> | پروتئین: <b>${f.prot}g</b> | کربو: <b>${f.carb}g</b> | چربی: <b>${f.fat}g</b>`;
+    }
+
+    foodSelect.addEventListener('change', updatePreview);
+
+    // افزودن رکورد به لیست امروز
+    btnAddFood.addEventListener('click', () => {
+      const idx = foodSelect.value;
+      const weight = parseFloat(weightInput.value);
+      const meal = mealSelect.value;
+
+      if (!weight || weight <= 0) {
+        alert('لطفاً وزن معتبری به گرم وارد کنید.');
+        return;
+      }
+
+      const food = foodList[idx];
+      const ratio = weight / 100;
+
+      dailyLogs.push({
+        id: Date.now(),
+        meal: meal,
+        name: food.name,
+        weight: weight,
+        cal: Math.round(food.cal * ratio),
+        prot: +(food.prot * ratio).toFixed(1),
+        carb: +(food.carb * ratio).toFixed(1),
+        fat: +(food.fat * ratio).toFixed(1)
+      });
+
+      saveLogs();
+      renderLogs();
+    });
+
+    function deleteRecord(id) {
+      dailyLogs = dailyLogs.filter(i => i.id !== id);
+      saveLogs();
+      renderLogs();
+    }
+
+    function renderLogs() {
+      logBody.innerHTML = '';
+      if (dailyLogs.length === 0) {
+        emptyMessage.style.display = 'block';
+        sumCalories.textContent = '0';
+        sumProtein.textContent = '0g';
+        sumCarbs.textContent = '0g';
+        sumFat.textContent = '0g';
+        return;
+      }
+
+      emptyMessage.style.display = 'none';
+      let tCal = 0, tProt = 0, tCarb = 0, tFat = 0;
+
+      dailyLogs.forEach(i => {
+        tCal += i.cal;
+        tProt += i.prot;
+        tCarb += i.carb;
+        tFat += i.fat;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${i.meal}</strong></td>
+          <td>${i.name}</td>
+          <td>${i.weight}</td>
+          <td><span style="color:#059669; font-weight:700;">${i.cal}</span></td>
+          <td>P: ${i.prot} | C: ${i.carb} | F: ${i.fat}</td>
+          <td><button class="btn-delete" onclick="deleteRecord(${i.id})" title="حذف">&times;</button></td>
+        `;
+        logBody.appendChild(tr);
+      });
+
+      sumCalories.textContent = tCal.toLocaleString('fa-IR');
+      sumProtein.textContent = tProt.toFixed(1) + 'g';
+      sumCarbs.textContent = tCarb.toFixed(1) + 'g';
+      sumFat.textContent = tFat.toFixed(1) + 'g';
+    }
+
+    // رندر جدول داده‌های کامل (تب ۲)
+    function renderFullDatabaseTable() {
+      const q = tableSearch.value.trim().toLowerCase();
+      fullDbBody.innerHTML = '';
+
+      const filtered = foodList.filter(f => f.name.toLowerCase().includes(q));
+
+      filtered.forEach(f => {
+        const tr = document.createElement('tr');
+        let badgeHtml = '';
+        if (f.state === 'raw') badgeHtml = '<span class="badge badge-raw">خام</span>';
+        else if (f.state === 'cooked') badgeHtml = '<span class="badge badge-cooked">پخته</span>';
+        else badgeHtml = '<span class="badge badge-basic">پایه</span>';
+
+        tr.innerHTML = `
+          <td><strong>${f.name}</strong></td>
+          <td>${badgeHtml}</td>
+          <td>${f.cal}</td>
+          <td>${f.prot}</td>
+          <td>${f.carb}</td>
+          <td>${f.fat}</td>
+        `;
+        fullDbBody.appendChild(tr);
+      });
+    }
+
+    tableSearch.addEventListener('input', renderFullDatabaseTable);
+
+    // تب ۳: نمایش متن JSON
+    function renderJsonViewer() {
+      jsonCodeBlock.textContent = JSON.stringify(foodList, null, 2);
+    }
+
+    function copyJsonData() {
+      const txt = JSON.stringify(foodList, null, 2);
+      navigator.clipboard.writeText(txt).then(() => {
+        alert('اطلاعات خام JSON در کلیپ‌بورد کپی شد.');
+      });
+    }
+
+    // ذخیره‌سازی
+    function saveLogs() {
+      localStorage.setItem('cal_daily_logs_v2', JSON.stringify(dailyLogs));
+    }
+
+    function saveFoodDatabase() {
+      localStorage.setItem('cal_food_db_v2', JSON.stringify(foodList));
+    }
+
+    function resetDatabasePrompt() {
+      if (confirm('آیا مایلید تمام غذاها به تنظیمات اولیه کارخانه برگردند؟')) {
+        foodList = defaultFoods;
+        saveFoodDatabase();
+        populateFoodDropdown();
+        renderFullDatabaseTable();
+        renderJsonViewer();
+      }
+    }
+
+    // مودال ثبت
+    btnOpenModal.addEventListener('click', () => customModal.classList.add('open'));
+    btnCloseModal.addEventListener('click', () => customModal.classList.remove('open'));
+    window.addEventListener('click', (e) => { if (e.target === customModal) customModal.classList.remove('open'); });
+
+    btnSaveCustomFood.addEventListener('click', () => {
+      const name = document.getElementById('newFoodName').value.trim();
+      const state = document.getElementById('newState').value;
+      const cal = parseFloat(document.getElementById('newCal').value);
+      const prot = parseFloat(document.getElementById('newProt').value) || 0;
+      const carb = parseFloat(document.getElementById('newCarb').value) || 0;
+      const fat = parseFloat(document.getElementById('newFat').value) || 0;
+
+      if (!name || isNaN(cal)) {
+        alert('لطفاً حداقل نام غذا و کالری آن را وارد کنید.');
+        return;
+      }
+
+      foodList.push({ name, state, cal, prot, carb, fat });
+      saveFoodDatabase();
+      populateFoodDropdown();
+      customModal.classList.remove('open');
+
+      document.getElementById('newFoodName').value = '';
+      document.getElementById('newCal').value = '';
+      document.getElementById('newProt').value = '';
+      document.getElementById('newCarb').value = '';
+      document.getElementById('newFat').value = '';
+
+      alert(`ماده «${name}» با موفقیت اضافه شد.`);
+    });
+
+    // شروع
+    populateFoodDropdown();
+    renderLogs();
+    renderFullDatabaseTable();
+    renderJsonViewer();
+  </script>
+</body>
+</html>
