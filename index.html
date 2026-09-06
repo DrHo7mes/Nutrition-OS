@@ -425,7 +425,7 @@
         <div class="card-header">
           <div class="card-title">
             <span>وضعیت دریافت انرژی و درشت‌مغذی‌ها</span>
-            <span id="targetOriginBadge" class="badge badge-basic">منبع هدف: تنظیم خودکار BMR/TDEE</span>
+            <span id="targetOriginBadge" class="badge badge-basic">منبع هدف: تنظیم خودکار بر اساس وزن بدن (g/kg)</span>
           </div>
           <div style="font-size: 0.85rem; font-weight: 600;" id="calorieDifferenceText">باقی‌مانده: ۰ kcal</div>
         </div>
@@ -482,17 +482,18 @@
           <div id="dashboardMealsBreakdown"></div>
         </div>
 
+        <!-- گزارش ارتقایافته برای ChatGPT با جزئیات کامل اقلام و تمرینات -->
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">🤖 گزارش آماده برای ChatGPT</h3>
-            <button class="btn btn-primary btn-sm" id="btnCopyChatGptToday">📋 کپی متن</button>
+            <h3 class="card-title">🤖 گزارش آماده برای ChatGPT (همراه با ریز اقلام و تمرین)</h3>
+            <button class="btn btn-primary btn-sm" id="btnCopyChatGptToday">📋 کپی متن کامل</button>
           </div>
-          <textarea id="chatGptFormattedBox" rows="8" readonly style="font-size: 0.82rem; font-family: monospace; direction: ltr; text-align: left;"></textarea>
+          <textarea id="chatGptFormattedBox" rows="10" readonly style="font-size: 0.82rem; font-family: monospace; direction: ltr; text-align: left;"></textarea>
         </div>
       </div>
     </section>
 
-    <!-- ۲. ثبت غذا با تفکیک ۴ وعده -->
+    <!-- ۲. ثبت غذا -->
     <section id="foodLogView" class="view-section">
       <div class="grid-2">
         <div class="card">
@@ -633,7 +634,7 @@
           </div>
           <div class="table-container">
             <table>
-              <thead><tr><th>فعالیت</th><th>مدت</th><th>کالری</th><th>حذف</th></tr></thead>
+              <thead><tr><th>فعالیت</th><th>مدت</th><th>شدت</th><th>کالری</th><th>حذف</th></tr></thead>
               <tbody id="dailyActivityTableBody"></tbody>
             </table>
           </div>
@@ -654,7 +655,7 @@
       </div>
     </section>
 
-    <!-- ۶. اهداف و پروفایل -->
+    <!-- ۶. اهداف و پروفایل (فرمول استاندارد گرم بر کیلوگرم پروتئین/چربی و تفاضلی کربوهیدرات) -->
     <section id="profileGoalsView" class="view-section">
       <div class="grid-2">
         <div class="card">
@@ -684,11 +685,22 @@
             <div class="form-group">
               <label for="profGoal">هدف رژیم</label>
               <select id="profGoal">
-                <option value="cut">کاهش وزن (چربی‌سوزی با کسر منطقی کالری)</option>
-                <option value="maintain">تثبیت و حفظ وزن</option>
-                <option value="bulk">افزایش وزن (عضله‌سازی با مازاد کالری)</option>
+                <option value="cut">کاهش وزن (۲.۰ گرم پروتئین / ۰.۹ گرم چربی به ازای هر کیلو وزن)</option>
+                <option value="maintain">تثبیت و حفظ وزن (۱.۶ گرم پروتئین / ۰.۹ گرم چربی به ازای هر کیلو وزن)</option>
+                <option value="bulk">افزایش وزن (۱.۸ گرم پروتئین / ۱.۰ گرم چربی به ازای هر کیلو وزن)</option>
               </select>
             </div>
+
+            <!-- تنظیم مستقیم و استاندارد گرم بر کیلوگرم -->
+            <div style="background:var(--bg-surface-alt); padding:12px; border-radius:var(--radius-md); margin-bottom:14px;">
+              <div style="font-size:0.85rem; font-weight:700; margin-bottom:8px;">تنظیم ضرایب به ازای هر کیلوگرم وزن بدن (g/kg):</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div><label>پروتئین (g/kg)</label><input type="number" id="ratioProteinPerKg" step="0.1" value="2.0"></div>
+                <div><label>چربی (g/kg)</label><input type="number" id="ratioFatPerKg" step="0.1" value="0.9"></div>
+              </div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin-top:6px;">کربوهیدرات به صورت خودکار از تفاضل کالری کل با سهم پروتئین و چربی تعیین می‌شود.</p>
+            </div>
+
             <button type="submit" class="btn btn-primary btn-block">ذخیره اطلاعات و محاسبه مجدد شاخص‌ها</button>
           </form>
         </div>
@@ -791,16 +803,15 @@
       </div>
     </section>
 
-    <!-- ۹. همگام‌سازی مستقیم و پایدار (Cloud Relay + Sync Code فشرده) -->
+    <!-- ۹. همگام‌سازی ابری و کد هش -->
     <section id="dataManageView" class="view-section">
       <div class="grid-2">
         <div class="card">
           <div class="card-header"><h3 class="card-title">☁️ همگام‌سازی مطمئن چند‌دستگاهی</h3></div>
           <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
-            ارسال و دریافت ابری مستقیم بدون نیاز به ثبت نام و بدون فیلترینگ انجام می‌شود. در صورت قطع شبکه، می‌توانید از کد هش انتقال فوری استفاده کنید.
+            ارسال و دریافت ابری بدون نیاز به فیلترشکن فعال است. در صورت نیاز می‌توانید مستقیماً از «کد هش انتقال» استفاده کنید.
           </p>
 
-          <!-- روش اول: همگام‌سازی ابری زنده -->
           <div class="form-group">
             <label for="cloudSyncIdInput">شناسه اختصاصی همگام‌سازی (Sync Key):</label>
             <div style="display: flex; gap: 8px;">
@@ -814,9 +825,8 @@
           </div>
           <div id="cloudSyncStatusMsg" style="font-size: 0.84rem; margin-top: 10px;"></div>
 
-          <!-- روش دوم: کد هش فشرده انتقال ۱۰۰٪ تضمینی -->
           <div style="margin-top: 16px; border-top: 1px dashed var(--border-color); padding-top: 14px;">
-            <label>روش تضمینی: انتقال با «کد هش انتقال (Sync Hash)»:</label>
+            <label>روش تضمینی بدون اینترنت خارجی (کد هش انتقال فشرده):</label>
             <div style="display: flex; gap: 8px; margin-top: 6px;">
               <button class="btn btn-secondary btn-sm" id="btnExportSyncHash">📋 کپی کد انتقال</button>
               <button class="btn btn-secondary btn-sm" id="btnImportSyncHash">📥 اعمال کد در این دستگاه</button>
@@ -1034,7 +1044,7 @@
 
     class NutritionOSEngine {
       constructor() {
-        this.STORAGE_KEY = "nutrition_os_data_v7";
+        this.STORAGE_KEY = "nutrition_os_data_v8";
         this.state = this.loadState();
         this.currentDate = this.getTodayDateString();
         this.charts = {};
@@ -1043,11 +1053,28 @@
 
       getDefaultState() {
         return {
-          version: "7.0",
+          version: "8.0",
           theme: "light",
           cloudSyncId: "",
-          profile: { name: "کاربر", gender: "male", age: 30, height: 175, weight: 78.0, activityLevel: 1.375, goal: "cut" },
-          goals: { mode: "auto", targetCalories: 2200, targetProtein: 160, targetCarbs: 230, targetFat: 70, macroPercentages: { protein: 30, carbs: 40, fat: 30 }, origin: "BMR/TDEE" },
+          profile: {
+            name: "کاربر",
+            gender: "male",
+            age: 30,
+            height: 175,
+            weight: 78.0,
+            activityLevel: 1.375,
+            goal: "cut",
+            ratioProteinPerKg: 2.0,
+            ratioFatPerKg: 0.9
+          },
+          goals: {
+            mode: "auto",
+            targetCalories: 2200,
+            targetProtein: 156,
+            targetCarbs: 236,
+            targetFat: 70,
+            origin: "بر مبنای گرم بر کیلوگرم وزن بدن"
+          },
           customFoods: [],
           foodLogs: {},
           weightLogs: [
@@ -1070,7 +1097,7 @@
             return decoded;
           }
 
-          const raw = localStorage.getItem(this.STORAGE_KEY) || localStorage.getItem("nutrition_os_data_v6") || localStorage.getItem("nutrition_os_data_v5");
+          const raw = localStorage.getItem(this.STORAGE_KEY) || localStorage.getItem("nutrition_os_data_v7");
           if (!raw) return this.getDefaultState();
           return { ...this.getDefaultState(), ...JSON.parse(raw) };
         } catch { return this.getDefaultState(); }
@@ -1106,14 +1133,32 @@
         return Math.round(this.calculateBMR() * (parseFloat(this.state.profile.activityLevel) || 1.375));
       }
 
+      // محاسبه استاندارد جهانی پروتئین و چربی بر مبنای وزن بدن (g/kg) و تفاضلی کربوهیدرات
       recalculateAutoGoals() {
         const tdee = this.calculateTDEE();
+        const w = parseFloat(this.state.profile.weight) || 70;
         let targetCal = this.state.profile.goal === 'cut' ? Math.max(1200, tdee - 450) : (this.state.profile.goal === 'bulk' ? tdee + 300 : tdee);
-        const { protein, carbs, fat } = this.state.goals.macroPercentages;
+
+        const protRatio = parseFloat(this.state.profile.ratioProteinPerKg) || 2.0;
+        const fatRatio = parseFloat(this.state.profile.ratioFatPerKg) || 0.9;
+
+        // ۱. محاسبه پروتئین و چربی بر مبنای وزن بدن
+        const targetProtein = Math.round(w * protRatio);
+        const targetFat = Math.round(w * fatRatio);
+
+        // ۲. محاسبه کالری حاصل از پروتئین و چربی
+        const protCalories = targetProtein * 4;
+        const fatCalories = targetFat * 9;
+
+        // ۳. تخصیص مابقی کالری به کربوهیدرات برای رسیدن دقیق به کالری هدف
+        const remainingCaloriesForCarbs = Math.max(0, targetCal - (protCalories + fatCalories));
+        const targetCarbs = Math.round(remainingCaloriesForCarbs / 4);
+
         this.state.goals.targetCalories = targetCal;
-        this.state.goals.targetProtein = Math.round((targetCal * (protein / 100)) / 4);
-        this.state.goals.targetCarbs = Math.round((targetCal * (carbs / 100)) / 4);
-        this.state.goals.targetFat = Math.round((targetCal * (fat / 100)) / 9);
+        this.state.goals.targetProtein = targetProtein;
+        this.state.goals.targetFat = targetFat;
+        this.state.goals.targetCarbs = targetCarbs;
+        this.state.goals.origin = `محاسبه بر مبنای وزن بدن (${protRatio}g/kg پروتئین، ${fatRatio}g/kg چربی)`;
         this.saveState();
       }
 
@@ -1143,27 +1188,21 @@
         };
       }
 
-      // سیستم مستقیم و تضمینی همگام‌سازی ابری با Fallback هوشمند
       async pushToCloud(syncId) {
         const key = syncId.trim();
         const payload = JSON.stringify(this.state);
-        
-        // ارسال مستقیم به درگاه بدون تحریم
-        const response = await fetch(`https://api.counterapi.dev/v1/${encodeURIComponent(key)}/sync`, {
+        await fetch(`https://api.counterapi.dev/v1/${encodeURIComponent(key)}/sync`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: payload })
         }).catch(() => null);
 
-        // ذخیره آینه‌ای پایدار
         localStorage.setItem(`sync_vault_${key}`, payload);
         return true;
       }
 
       async pullFromCloud(syncId) {
         const key = syncId.trim();
-        
-        // ابتدا بررسی سرور
         let cloudData = null;
         try {
           const res = await fetch(`https://api.counterapi.dev/v1/${encodeURIComponent(key)}/sync`);
@@ -1171,7 +1210,7 @@
             const json = await res.json();
             if (json && json.data) cloudData = JSON.parse(json.data);
           }
-        } catch { /* ادامه با پایگاه آینه‌ای */ }
+        } catch { /* Fallback */ }
 
         if (!cloudData) {
           const localVault = localStorage.getItem(`sync_vault_${key}`);
@@ -1183,7 +1222,7 @@
           this.saveState();
           return true;
         }
-        throw new Error("داده‌ای برای این کلید یافت نشد.");
+        throw new Error("داده‌ای یافت نشد.");
       }
     }
 
@@ -1277,9 +1316,9 @@
             await this.engine.pushToCloud(syncId);
             this.engine.state.cloudSyncId = syncId;
             this.engine.saveState();
-            msg.innerHTML = `<span style="color:var(--color-primary); font-weight:700;">✅ اطلاعات با موفقیت در فضای ابری ثبت شد. در دستگاه دیگر همین شناسه را وارد کرده و دکمه دریافت را بزنید.</span>`;
+            msg.innerHTML = `<span style="color:var(--color-primary); font-weight:700;">✅ اطلاعات با موفقیت در فضای ابری ثبت شد.</span>`;
           } catch {
-            msg.innerHTML = `<span style="color:var(--color-danger); font-weight:700;">خطا در ارسال. مجدداً تلاش کنید.</span>`;
+            msg.innerHTML = `<span style="color:var(--color-danger); font-weight:700;">خطا در ارسال ابری.</span>`;
           }
         });
 
@@ -1292,16 +1331,15 @@
             await this.engine.pullFromCloud(syncId);
             alert("اطلاعات اکانت با موفقیت بازیابی شد.");
             location.reload();
-          } catch (err) {
-            msg.innerHTML = `<span style="color:var(--color-danger); font-weight:700;">شناسه یافت نشد یا هنوز اطلاعاتی برای آن ثبت نشده است.</span>`;
+          } catch {
+            msg.innerHTML = `<span style="color:var(--color-danger); font-weight:700;">شناسه یافت نشد یا ثبت نشده است.</span>`;
           }
         });
 
-        // روش کد هش فشرده انتقال
         document.getElementById('btnExportSyncHash').addEventListener('click', () => {
           const hash = btoa(unescape(encodeURIComponent(JSON.stringify(this.engine.state))));
           navigator.clipboard.writeText(hash).then(() => {
-            alert("کد هش انتقال با موفقیت کپی شد! در دستگاه مقصد روی دکمه «اعمال کد» بزنید و این متن را Paste کنید.");
+            alert("کد هش انتقال با موفقیت کپی شد! در دستگاه دیگر دکمه «اعمال کد» را بزنید و این متن را قرار دهید.");
           });
         });
 
@@ -1323,12 +1361,12 @@
           const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(this.engine.state))));
           const magicUrl = `${window.location.origin}${window.location.pathname}?syncData=${base64}`;
           navigator.clipboard.writeText(magicUrl).then(() => {
-            alert("لینک مستقیم انتقال کپی شد! کافی است این لینک را در گوشی دیگر باز کنید تا تمام اطلاعات فوراً بارگذاری شوند.");
+            alert("لینک مستقیم انتقال کپی شد! کافی است این لینک را در مرورگر دیگر باز کنید.");
           });
         });
 
         document.getElementById('btnCopyChatGptToday').addEventListener('click', () => {
-          navigator.clipboard.writeText(document.getElementById('chatGptFormattedBox').value).then(() => alert("گزارش روز کپی شد."));
+          navigator.clipboard.writeText(document.getElementById('chatGptFormattedBox').value).then(() => alert("گزارش جامع روز برای ChatGPT کپی شد!"));
         });
       }
 
@@ -1369,6 +1407,8 @@
         document.getElementById('profWeight').value = p.weight || 75;
         document.getElementById('profActivityLevel').value = p.activityLevel || 1.375;
         document.getElementById('profGoal').value = p.goal || 'cut';
+        document.getElementById('ratioProteinPerKg').value = p.ratioProteinPerKg || 2.0;
+        document.getElementById('ratioFatPerKg').value = p.ratioFatPerKg || 0.9;
 
         document.getElementById('calcBmrVal').textContent = `${this.engine.calculateBMR()} kcal`;
         document.getElementById('calcTdeeVal').textContent = `${this.engine.calculateTDEE()} kcal`;
@@ -1391,6 +1431,8 @@
         p.weight = parseFloat(document.getElementById('profWeight').value) || 70;
         p.activityLevel = parseFloat(document.getElementById('profActivityLevel').value) || 1.375;
         p.goal = document.getElementById('profGoal').value;
+        p.ratioProteinPerKg = parseFloat(document.getElementById('ratioProteinPerKg').value) || 2.0;
+        p.ratioFatPerKg = parseFloat(document.getElementById('ratioFatPerKg').value) || 0.9;
 
         if (this.engine.state.goals.mode === 'auto') {
           this.engine.recalculateAutoGoals();
@@ -1399,7 +1441,7 @@
         this.engine.saveState();
         this.syncProfileForm();
         this.renderDashboard();
-        alert("اطلاعات بیومتریک و سطح فعالیت ذخیره شد و پایدار باقی خواهد ماند.");
+        alert("اطلاعات بیومتریک و ضرایب استاندارد ماکروها (g/kg) ذخیره شد.");
       }
 
       renderDateDisplays() {
@@ -1465,9 +1507,56 @@
         });
       }
 
+      // گزارش کامل برای ChatGPT با نام و وزن اقلام در هر وعده و جزئیات فعالیت
       renderChatGptTextToday(summary) {
-        const text = `تاریخ: ${this.engine.toShamsiDisplay(this.engine.currentDate)}\nکالری مصرفی: ${summary.consumedCal} kcal (هدف: ${this.engine.state.goals.targetCalories})\nپروتئین: ${summary.consumedProtein}g | کربو: ${summary.consumedCarbs}g | چربی: ${summary.consumedFat}g\nکالری ورزش: ${summary.burnedCal} kcal`;
-        document.getElementById('chatGptFormattedBox').value = text;
+        const shamsi = this.engine.toShamsiDisplay(this.engine.currentDate);
+        const wLogs = this.engine.state.weightLogs;
+        const lastWeight = wLogs.length ? wLogs[wLogs.length - 1].weight : 'ثبت‌نشده';
+        const goals = this.engine.state.goals;
+
+        const logs = this.engine.state.foodLogs[this.engine.currentDate] || [];
+        const mealLabels = { breakfast: 'صبحانه', lunch: 'ناهار', dinner: 'شام', snack: 'میان‌وعده' };
+
+        let mealsReport = "";
+        ['breakfast', 'lunch', 'dinner', 'snack'].forEach(m => {
+          const items = logs.filter(l => l.meal === m);
+          mealsReport += `\n[${mealLabels[m]}]:\n`;
+          if (items.length === 0) {
+            mealsReport += "  - موردی ثبت نشده است.\n";
+          } else {
+            items.forEach(i => {
+              mealsReport += `  - ${i.name} | مقدار: ${i.weight} گرم | کالری: ${i.cal} kcal (P:${i.prot}g, C:${i.carb}g, F:${i.fat}g)\n`;
+            });
+          }
+        });
+
+        const actLogs = this.engine.state.activityLogs[this.engine.currentDate] || [];
+        let activityReport = "";
+        if (actLogs.length === 0) {
+          activityReport = "فعالیتی برای امروز ثبت نشده است.\n";
+        } else {
+          actLogs.forEach((a, idx) => {
+            activityReport += `${idx + 1}. نوع تمرین: ${a.name} | مدت زمان: ${a.duration} دقیقه | شدت: ${a.intensity || 'معمولی'} | کالری سوزانده‌شده: ${a.calories} kcal\n`;
+          });
+        }
+
+        const fullReport = `گزارش پایش روزانه تغذیه و سلامت شخصی (Nutrition OS)
+تاریخ: ${shamsi} (${this.engine.currentDate})
+وزن فعلی: ${lastWeight} kg
+
+--- وضعیت انرژی و درشت‌مغذی‌ها ---
+کالری کل دریافتی: ${summary.consumedCal} kcal / هدف: ${goals.targetCalories} kcal
+پروتئین: ${summary.consumedProtein} g / هدف: ${goals.targetProtein} g
+کربوهیدرات: ${summary.consumedCarbs} g / هدف: ${goals.targetCarbs} g
+چربی: ${summary.consumedFat} g / هدف: ${goals.targetFat} g
+مجموع کالری ورزش و فعالیت: ${summary.burnedCal} kcal
+
+--- ریز اقلام مصرفی به تفکیک وعده‌ها ---${mealsReport}
+--- جزئیات تمرین و فعالیت بدنی ---
+${activityReport}
+لطفاً این اطلاعات را بررسی و تحلیل جامع ارائه دهید.`;
+
+        document.getElementById('chatGptFormattedBox').value = fullReport;
       }
 
       selectFoodForInput(food) {
@@ -1636,7 +1725,7 @@
         const cal = this.engine.calculateActivityCalories(act.met, dur, intensity);
 
         if (!this.engine.state.activityLogs[this.engine.currentDate]) this.engine.state.activityLogs[this.engine.currentDate] = [];
-        this.engine.state.activityLogs[this.engine.currentDate].push({ id: "act_" + Date.now(), name: act.name, duration: dur, calories: Number(cal) });
+        this.engine.state.activityLogs[this.engine.currentDate].push({ id: "act_" + Date.now(), name: act.name, duration: dur, intensity: intensity, calories: Number(cal) });
         this.engine.saveState();
 
         this.renderDashboard();
@@ -1652,13 +1741,13 @@
         document.getElementById('totalActivityCalToday').textContent = `مجموع: ${totalBurned} kcal`;
 
         if (list.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted); font-size:0.85rem;">هیچ فعالیتی برای امروز ثبت نشده است.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); font-size:0.85rem;">هیچ فعالیتی برای امروز ثبت نشده است.</td></tr>`;
           return;
         }
 
         list.forEach(item => {
           const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${item.name}</td><td>${item.duration} دقیقه</td><td><b style="color:var(--color-accent);">${item.calories} kcal</b></td><td><button class="btn btn-danger btn-sm" onclick="app.deleteActivityLog('${item.id}')">&times;</button></td>`;
+          tr.innerHTML = `<td>${item.name}</td><td>${item.duration} دقیقه</td><td>${item.intensity || '1.15'}</td><td><b style="color:var(--color-accent);">${item.calories} kcal</b></td><td><button class="btn btn-danger btn-sm" onclick="app.deleteActivityLog('${item.id}')">&times;</button></td>`;
           tbody.appendChild(tr);
         });
       }
