@@ -482,13 +482,12 @@
           <div id="dashboardMealsBreakdown"></div>
         </div>
 
-        <!-- گزارش ارتقایافته برای ChatGPT با جزئیات کامل اقلام و تمرینات -->
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">🤖 گزارش آماده برای ChatGPT (همراه با ریز اقلام و تمرین)</h3>
+            <h3 class="card-title">🤖 گزارش آماده برای ChatGPT (همراه با اهداف، ریز اقلام و تمرین)</h3>
             <button class="btn btn-primary btn-sm" id="btnCopyChatGptToday">📋 کپی متن کامل</button>
           </div>
-          <textarea id="chatGptFormattedBox" rows="10" readonly style="font-size: 0.82rem; font-family: monospace; direction: ltr; text-align: left;"></textarea>
+          <textarea id="chatGptFormattedBox" rows="12" readonly style="font-size: 0.82rem; font-family: monospace; direction: ltr; text-align: left;"></textarea>
         </div>
       </div>
     </section>
@@ -543,7 +542,7 @@
       </div>
     </section>
 
-    <!-- ۳. ثبت وزن -->
+    <!-- ۳. ثبت وزن همراه با دکمه حذف کاملاً اصلاح‌شده -->
     <section id="weightView" class="view-section">
       <div class="grid-2">
         <div class="card">
@@ -655,7 +654,7 @@
       </div>
     </section>
 
-    <!-- ۶. اهداف و پروفایل (فرمول استاندارد گرم بر کیلوگرم پروتئین/چربی و تفاضلی کربوهیدرات) -->
+    <!-- ۶. اهداف و پروفایل -->
     <section id="profileGoalsView" class="view-section">
       <div class="grid-2">
         <div class="card">
@@ -691,7 +690,6 @@
               </select>
             </div>
 
-            <!-- تنظیم مستقیم و استاندارد گرم بر کیلوگرم -->
             <div style="background:var(--bg-surface-alt); padding:12px; border-radius:var(--radius-md); margin-bottom:14px;">
               <div style="font-size:0.85rem; font-weight:700; margin-bottom:8px;">تنظیم ضرایب به ازای هر کیلوگرم وزن بدن (g/kg):</div>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
@@ -1133,7 +1131,6 @@
         return Math.round(this.calculateBMR() * (parseFloat(this.state.profile.activityLevel) || 1.375));
       }
 
-      // محاسبه استاندارد جهانی پروتئین و چربی بر مبنای وزن بدن (g/kg) و تفاضلی کربوهیدرات
       recalculateAutoGoals() {
         const tdee = this.calculateTDEE();
         const w = parseFloat(this.state.profile.weight) || 70;
@@ -1142,15 +1139,12 @@
         const protRatio = parseFloat(this.state.profile.ratioProteinPerKg) || 2.0;
         const fatRatio = parseFloat(this.state.profile.ratioFatPerKg) || 0.9;
 
-        // ۱. محاسبه پروتئین و چربی بر مبنای وزن بدن
         const targetProtein = Math.round(w * protRatio);
         const targetFat = Math.round(w * fatRatio);
 
-        // ۲. محاسبه کالری حاصل از پروتئین و چربی
         const protCalories = targetProtein * 4;
         const fatCalories = targetFat * 9;
 
-        // ۳. تخصیص مابقی کالری به کربوهیدرات برای رسیدن دقیق به کالری هدف
         const remainingCaloriesForCarbs = Math.max(0, targetCal - (protCalories + fatCalories));
         const targetCarbs = Math.round(remainingCaloriesForCarbs / 4);
 
@@ -1507,7 +1501,6 @@
         });
       }
 
-      // گزارش کامل برای ChatGPT با نام و وزن اقلام در هر وعده و جزئیات فعالیت
       renderChatGptTextToday(summary) {
         const shamsi = this.engine.toShamsiDisplay(this.engine.currentDate);
         const wLogs = this.engine.state.weightLogs;
@@ -1536,25 +1529,32 @@
           activityReport = "فعالیتی برای امروز ثبت نشده است.\n";
         } else {
           actLogs.forEach((a, idx) => {
-            activityReport += `${idx + 1}. نوع تمرین: ${a.name} | مدت زمان: ${a.duration} دقیقه | شدت: ${a.intensity || 'معمولی'} | کالری سوزانده‌شده: ${a.calories} kcal\n`;
+            activityReport += `${idx + 1}. نوع تمرین: ${a.name} | مدت زمان: ${a.duration} دقیقه | ضریب شدت: ${a.intensity || '1.15'} | کالری سوزانده‌شده: ${a.calories} kcal\n`;
           });
         }
 
-        const fullReport = `گزارش پایش روزانه تغذیه و سلامت شخصی (Nutrition OS)
+        const fullReport = `گزارش جامع پایش تغذیه و سلامت شخصی (Nutrition OS)
 تاریخ: ${shamsi} (${this.engine.currentDate})
 وزن فعلی: ${lastWeight} kg
 
---- وضعیت انرژی و درشت‌مغذی‌ها ---
-کالری کل دریافتی: ${summary.consumedCal} kcal / هدف: ${goals.targetCalories} kcal
-پروتئین: ${summary.consumedProtein} g / هدف: ${goals.targetProtein} g
-کربوهیدرات: ${summary.consumedCarbs} g / هدف: ${goals.targetCarbs} g
-چربی: ${summary.consumedFat} g / هدف: ${goals.targetFat} g
-مجموع کالری ورزش و فعالیت: ${summary.burnedCal} kcal
+--- اهداف روزانه تعیین‌شده ---
+• هدف کالری کل: ${goals.targetCalories} kcal
+• هدف پروتئین: ${goals.targetProtein} g
+• هدف کربوهیدرات: ${goals.targetCarbs} g
+• هدف چربی: ${goals.targetFat} g
+• مبنای محاسبه: ${goals.origin}
 
---- ریز اقلام مصرفی به تفکیک وعده‌ها ---${mealsReport}
---- جزئیات تمرین و فعالیت بدنی ---
+--- دریافت واقعی امروز ---
+• کالری مصرفی: ${summary.consumedCal} kcal (تفاضل با هدف: ${summary.consumedCal - goals.targetCalories > 0 ? '+' : ''}${summary.consumedCal - goals.targetCalories} kcal)
+• پروتئین دریافتی: ${summary.consumedProtein} g
+• کربوهیدرات دریافتی: ${summary.consumedCarbs} g
+• چربی دریافتی: ${summary.consumedFat} g
+• مجموع کالری فعالیت بدنی: ${summary.burnedCal} kcal
+
+--- ریز اقلام غذایی مصرف‌شده به تفکیک وعده‌ها ---${mealsReport}
+--- جزئیات فعالیت بدنی و تمرینات ---
 ${activityReport}
-لطفاً این اطلاعات را بررسی و تحلیل جامع ارائه دهید.`;
+لطفاً این داده‌ها را ارزیابی کرده و بازخورد یا توصیه‌های لازم را ارائه فرمایید.`;
 
         document.getElementById('chatGptFormattedBox').value = fullReport;
       }
@@ -1679,15 +1679,54 @@ ${activityReport}
       renderWeightHistoryTable() {
         const tbody = document.getElementById('weightHistoryTableBody');
         tbody.innerHTML = '';
-        [...this.engine.state.weightLogs].reverse().forEach(w => {
+        const logs = [...this.engine.state.weightLogs].reverse();
+
+        if (logs.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:16px;">هنوز رکوردی برای وزن ثبت نشده است.</td></tr>`;
+          this.updateWeightKpiDisplay();
+          return;
+        }
+
+        logs.forEach(w => {
           const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${this.engine.toShamsiDisplay(w.date)}</td><td>${w.time || '--'}</td><td><b>${w.weight} kg</b></td><td>${w.note || '-'}</td><td><button class="btn btn-danger btn-sm" onclick="app.deleteWeightLog('${w.id}')">&times;</button></td>`;
+          tr.innerHTML = `
+            <td><strong>${this.engine.toShamsiDisplay(w.date)}</strong></td>
+            <td>${w.time || '--'}</td>
+            <td><b>${w.weight} kg</b></td>
+            <td>${w.note || '-'}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="window.app.deleteWeightLog('${w.id}')" title="حذف این رکورد">&times;</button></td>
+          `;
           tbody.appendChild(tr);
         });
+
+        this.updateWeightKpiDisplay();
+      }
+
+      updateWeightKpiDisplay() {
+        const weights = this.engine.state.weightLogs.map(l => l.weight);
+        if (weights.length === 0) {
+          document.getElementById('weightFirstVal').textContent = '--';
+          document.getElementById('weightLastVal').textContent = '--';
+          document.getElementById('weightDiffVal').textContent = '--';
+          document.getElementById('weightAvgVal').textContent = '--';
+          return;
+        }
+        const first = weights[0];
+        const last = weights[weights.length - 1];
+        const diff = +(last - first).toFixed(1);
+        const avg = +(weights.reduce((a, b) => a + b, 0) / weights.length).toFixed(1);
+
+        document.getElementById('weightFirstVal').textContent = `${first} kg`;
+        document.getElementById('weightLastVal').textContent = `${last} kg`;
+        document.getElementById('weightAvgVal').textContent = `${avg} kg`;
+        const diffElem = document.getElementById('weightDiffVal');
+        diffElem.textContent = `${diff > 0 ? '+' : ''}${diff} kg`;
+        diffElem.style.color = diff <= 0 ? 'var(--color-primary)' : 'var(--color-warning)';
       }
 
       deleteWeightLog(id) {
-        this.engine.state.weightLogs = this.engine.state.weightLogs.filter(w => w.id !== id);
+        if (!confirm("آیا از حذف این رکورد وزن اطمینان دارید؟")) return;
+        this.engine.state.weightLogs = this.engine.state.weightLogs.filter(w => String(w.id) !== String(id));
         this.engine.saveState();
         this.renderAllViews();
       }
