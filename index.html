@@ -15,7 +15,6 @@
     :root {
       --font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       
-      /* تنالیته رنگی اختصاصی لوگوی هلثی */
       --healthy-green-dark: #0d5338;
       --healthy-green-deep: #083826;
       --healthy-green-light: #e6f4ed;
@@ -64,7 +63,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-family); -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-body); color: var(--text-main); direction: rtl; line-height: 1.6; display: flex; flex-direction: column; min-height: 100vh; padding-bottom: 80px; }
 
-    /* پنجره احراز هویت */
     #authOverlayWrapper {
       position: fixed;
       inset: 0;
@@ -86,7 +84,7 @@
       box-shadow: var(--shadow-lg);
     }
 
-    /* هدر موبایلی مشابه تصویر اول */
+    /* هدر موبایلی بهینه */
     header.app-header {
       background-color: var(--bg-surface);
       border-bottom: 1px solid var(--border-color);
@@ -97,43 +95,47 @@
     .header-container {
       max-width: 800px;
       margin: 0 auto;
-      padding: 14px 18px;
+      padding: 10px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 8px;
     }
-    .user-greeting { display: flex; align-items: center; gap: 12px; }
+    .user-greeting { display: flex; align-items: center; gap: 10px; min-width: 0; }
     .user-avatar {
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background: var(--healthy-orange-light);
       color: var(--healthy-orange);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.25rem;
-      font-weight: 800;
+      font-size: 1.15rem;
       border: 2px solid var(--healthy-orange);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: var(--transition);
     }
-    .greeting-text h4 { font-size: 1rem; font-weight: 800; color: var(--text-main); }
-    .greeting-text p { font-size: 0.75rem; color: var(--text-muted); }
+    .user-avatar:active { transform: scale(0.92); }
+    .greeting-text { min-width: 0; }
+    .greeting-text h4 { font-size: 0.92rem; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .greeting-text p { font-size: 0.72rem; color: var(--healthy-orange); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
     .date-badge {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       background: var(--bg-surface-alt);
       border: 1px solid var(--border-color);
-      padding: 6px 12px;
+      padding: 4px 10px;
       border-radius: var(--radius-full);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 700;
     }
     .date-badge input[type="date"] { border: none; background: transparent; color: var(--text-main); font-weight: 700; outline: none; cursor: pointer; }
 
-    /* بدنه اپلیکیشن */
     main.app-main {
       flex: 1;
       max-width: 800px;
@@ -145,13 +147,13 @@
     .view-section.active { display: block; animation: fadeIn 0.25s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* کارت موجودی کل (اصلی ترین المان بصری از عکس) */
+    /* کارت بزرگ کالری */
     .hero-calorie-card {
       background: linear-gradient(135deg, var(--healthy-green-dark), var(--healthy-green-deep));
       color: var(--text-white);
       border-radius: var(--radius-lg);
-      padding: 24px;
-      margin-bottom: 20px;
+      padding: 22px;
+      margin-bottom: 16px;
       box-shadow: var(--shadow-md);
       position: relative;
       overflow: hidden;
@@ -161,31 +163,37 @@
       position: absolute;
       left: -10px;
       bottom: -15px;
-      font-size: 7rem;
+      font-size: 6.5rem;
       opacity: 0.08;
       pointer-events: none;
     }
-    .hero-top { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; opacity: 0.9; margin-bottom: 8px; }
-    .hero-val { font-size: 2.2rem; font-weight: 900; letter-spacing: -0.5px; }
+    .hero-top { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; opacity: 0.9; margin-bottom: 6px; }
+    .hero-val { font-size: 2.1rem; font-weight: 900; letter-spacing: -0.5px; }
     .hero-sub { font-size: 0.8rem; opacity: 0.85; margin-top: 4px; }
-    .hero-progress-bg { background: rgba(255, 255, 255, 0.2); height: 8px; border-radius: var(--radius-full); margin-top: 16px; overflow: hidden; }
+    .hero-progress-bg { background: rgba(255, 255, 255, 0.2); height: 8px; border-radius: var(--radius-full); margin-top: 14px; overflow: hidden; }
     .hero-progress-fill { background: var(--healthy-orange); height: 100%; border-radius: var(--radius-full); transition: width 0.4s ease; }
 
-    /* کارت‌های شاخص‌های ماکرو */
-    .macro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    /* کارت‌های ماکرو همراه با درصد، باقی‌مانده و پروگرس بار */
+    .macro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
     .macro-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
-      padding: 14px 10px;
+      padding: 12px 10px;
       text-align: center;
       box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
-    .macro-card .m-title { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-bottom: 4px; }
-    .macro-card .m-val { font-size: 1.15rem; font-weight: 800; color: var(--healthy-green-dark); }
-    .macro-card .m-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+    .macro-card .m-title { font-size: 0.78rem; color: var(--text-muted); font-weight: 800; margin-bottom: 2px; }
+    .macro-card .m-val { font-size: 1.15rem; font-weight: 900; color: var(--healthy-green-dark); }
+    .macro-card .m-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
+    .macro-card .m-percent { font-size: 0.75rem; font-weight: 800; color: var(--healthy-orange); margin-top: 4px; }
+    .macro-card .m-rem { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+    .macro-progress-bg { width: 100%; height: 5px; background: rgba(13, 83, 56, 0.1); border-radius: var(--radius-full); margin-top: 6px; overflow: hidden; }
+    .macro-progress-fill { height: 100%; background: var(--healthy-orange); border-radius: var(--radius-full); transition: width 0.3s ease; }
 
-    /* کارت‌های سفید عمومی */
     .app-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
@@ -202,9 +210,8 @@
       padding-bottom: 10px;
       border-bottom: 1px solid var(--border-color);
     }
-    .card-header-styled h3 { font-size: 1rem; font-weight: 800; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
+    .card-header-styled h3 { font-size: 0.95rem; font-weight: 800; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
 
-    /* تب‌های المان‌ها */
     .tabs-pill-wrap { display: flex; gap: 6px; background: var(--bg-surface-alt); padding: 4px; border-radius: var(--radius-full); margin-bottom: 16px; border: 1px solid var(--border-color); }
     .tab-pill {
       flex: 1;
@@ -221,7 +228,6 @@
     }
     .tab-pill.active { background: var(--healthy-green-dark); color: var(--text-white); box-shadow: var(--shadow-sm); }
 
-    /* فرم‌ها و ورودی‌ها */
     .form-group { margin-bottom: 12px; position: relative; }
     label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 6px; color: var(--text-main); }
     input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="date"], input[type="time"], select, textarea {
@@ -255,10 +261,9 @@
     .btn-primary:hover { background: var(--healthy-orange-dark); }
     .btn-secondary { background: var(--healthy-green-light); color: var(--healthy-green-dark); }
     .btn-danger { background: #fee2e2; color: var(--color-danger); }
-    .btn-sm { padding: 6px 12px; font-size: 0.78rem; border-radius: var(--radius-full); }
+    .btn-sm { padding: 5px 12px; font-size: 0.78rem; border-radius: var(--radius-full); }
     .btn-block { width: 100%; }
 
-    /* وعده‌ها مشابه تراکنش‌های عکس اول */
     .meal-box {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
@@ -287,7 +292,6 @@
     }
     .meal-item-row:last-child { border-bottom: none; }
 
-    /* رسپی کارت‌ها */
     .recipe-card {
       background: var(--bg-surface-alt);
       border-radius: var(--radius-md);
@@ -299,7 +303,7 @@
     .recipe-title { font-size: 0.95rem; font-weight: 800; color: var(--healthy-green-dark); display: flex; justify-content: space-between; align-items: center; }
     .recipe-steps { font-size: 0.82rem; line-height: 1.7; color: var(--text-main); padding-right: 18px; margin-top: 6px; }
 
-    /* نوار ناوبری پایینی (Bottom Navigation) کاملاً مطابق تصویر اول */
+    /* نوار پایینی: جابجایی تب محاسبه به بعد از فعالیت */
     nav.bottom-nav {
       position: fixed;
       bottom: 0;
@@ -331,7 +335,6 @@
     .nav-item-btn.active { color: var(--healthy-green-dark); }
     .nav-item-btn.active span.icon { transform: translateY(-2px); }
 
-    /* لیست جستجو */
     .search-autocomplete-wrap { position: relative; }
     .search-results-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); max-height: 260px; overflow-y: auto; z-index: 50; box-shadow: var(--shadow-lg); display: none; }
     .search-item { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-bottom: 1px solid var(--bg-surface-alt); font-size: 0.85rem; }
@@ -355,7 +358,7 @@
 </head>
 <body>
 
-  <!-- پنجره ورود / ثبت‌نام -->
+  <!-- پنجره احراز هویت -->
   <div id="authOverlayWrapper">
     <div class="auth-box" id="loginCard">
       <div style="text-align: center; margin-bottom: 20px;">
@@ -407,14 +410,14 @@
     </div>
   </div>
 
-  <!-- هدر اپلیکیشن به سبک صفحه اصلی عکس ارسالی -->
+  <!-- هدر اپلیکیشن به سبک صفحه اصلی عکس ارسالی (با قابلیت لمس آواتار برای ورود به پروفایل) -->
   <header class="app-header">
     <div class="header-container">
       <div class="user-greeting">
-        <div class="user-avatar">👤</div>
+        <div class="user-avatar" id="headerProfileAvatar" title="مشاهده پروفایل">👤</div>
         <div class="greeting-text">
           <h4 id="userDisplayName">سلام، ورزشکار عزیز</h4>
-          <p id="cloudStatusBadge">امروز روز خوبی برای تناسب اندام است</p>
+          <p id="cloudStatusBadge">امروز روز پرانرژی شماست</p>
         </div>
       </div>
 
@@ -431,13 +434,12 @@
 
   <main class="app-main">
 
-    <!-- ۱. داشبورد (طراحی منطبق بر کارت موجودی کل و ویجت‌های عکس ارسالی) -->
+    <!-- ۱. داشبورد (با درصد پیشرفت، خط پرشونده و تفکیک باقی‌مانده ماکروها) -->
     <section id="dashboardView" class="view-section active">
       
-      <!-- کارت اصلی گرادیانت سبز تیره هلثی -->
       <div class="hero-calorie-card">
         <div class="hero-top">
-          <span>کالری کل روزانه</span>
+          <span>کالری کل مصرفی امروز</span>
           <span id="calorieDifferenceText">باقی‌مانده: ۰ kcal</span>
         </div>
         <div class="hero-val"><span id="dashConsumedCal">0</span> <span style="font-size: 1.1rem; font-weight: 500;">kcal</span></div>
@@ -447,22 +449,33 @@
         </div>
       </div>
 
-      <!-- ۳ کارت اختصاصی درشت‌مغذی‌ها -->
+      <!-- ۳ کارت اختصاصی درشت‌مغذی‌ها با درصد و نوار وضعیت -->
       <div class="macro-grid">
         <div class="macro-card">
           <div class="m-title">پروتئین</div>
           <div class="m-val" id="dashConsumedProtein">0g</div>
           <div class="m-sub" id="dashProteinTargetDisplay">هدف: 160g</div>
+          <div class="m-percent" id="dashProteinPercent">0%</div>
+          <div class="macro-progress-bg"><div id="dashProteinProgress" class="macro-progress-fill" style="width: 0%;"></div></div>
+          <div class="m-rem" id="dashProteinRemDisplay">باقی: 160g</div>
         </div>
+
         <div class="macro-card">
           <div class="m-title">کربوهیدرات</div>
           <div class="m-val" id="dashConsumedCarbs">0g</div>
           <div class="m-sub" id="dashCarbsTargetDisplay">هدف: 230g</div>
+          <div class="m-percent" id="dashCarbsPercent">0%</div>
+          <div class="macro-progress-bg"><div id="dashCarbsProgress" class="macro-progress-fill" style="width: 0%;"></div></div>
+          <div class="m-rem" id="dashCarbsRemDisplay">باقی: 230g</div>
         </div>
+
         <div class="macro-card">
-          <div class="m-title">چربی مفید</div>
+          <div class="m-title">چربی</div>
           <div class="m-val" id="dashConsumedFat">0g</div>
           <div class="m-sub" id="dashFatTargetDisplay">هدف: 70g</div>
+          <div class="m-percent" id="dashFatPercent">0%</div>
+          <div class="macro-progress-bg"><div id="dashFatProgress" class="macro-progress-fill" style="width: 0%;"></div></div>
+          <div class="m-rem" id="dashFatRemDisplay">باقی: 70g</div>
         </div>
       </div>
 
@@ -574,7 +587,7 @@
       </div>
     </section>
 
-    <!-- ۴. فعالیت ورزشی (با تنوع ساعت هوشمند و استراوا) -->
+    <!-- ۴. فعالیت ورزشی -->
     <section id="activityView" class="view-section">
       <div class="app-card">
         <div class="card-header-styled"><h3>ثبت و پایش فعالیت بدنی</h3></div>
@@ -634,20 +647,57 @@
       </div>
     </section>
 
-    <!-- ۵. گزارش‌ها -->
-    <section id="reportsView" class="view-section">
-      <div class="tabs-pill-wrap">
-        <button class="tab-pill active" id="btnTabWeeklyReport" onclick="app.switchReportTab('weekly')">۷ روز اخیر</button>
-        <button class="tab-pill" id="btnTabMonthlyReport" onclick="app.switchReportTab('monthly')">۳۰ روز اخیر</button>
-      </div>
-      <div class="macro-grid" id="reportKpiGrid" style="grid-template-columns: 1fr 1fr;"></div>
+    <!-- ۵. محاسبه مواد اولیه و هوش رسپی (منتقل شده به بعد از فعالیت) -->
+    <section id="targetCalcView" class="view-section">
       <div class="app-card">
-        <div class="card-header-styled"><h3>روند کالری مصرفی روزانه</h3></div>
-        <div style="height: 240px;"><canvas id="reportCaloriesChart"></canvas></div>
+        <div class="card-header-styled">
+          <h3>🧮 محاسبه مواد اولیه و پیشنهاد رسپی</h3>
+          <span class="badge badge-basic">سقف صلب پروتئین</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+          <div><label>کالری کل (kcal) *</label><input type="number" id="rawCalcTotalTarget" value="2000"></div>
+          <div><label>پروتئین هدف دقیق (g) *</label><input type="number" id="rawCalcProteinTarget" value="140" style="border-color: var(--healthy-orange);"></div>
+          <div><label>کربوهیدرات (g - اختیاری):</label><input type="number" id="rawCalcCarbsTarget" placeholder="اختیاری"></div>
+          <div><label>چربی (g - اختیاری):</label><input type="number" id="rawCalcFatTarget" placeholder="اختیاری"></div>
+        </div>
+
+        <div id="rawIngredientsRowsContainer"></div>
+
+        <div style="display: flex; gap: 8px; margin: 12px 0;">
+          <button class="btn btn-secondary btn-sm" id="btnAddRawIngredientRow">+ افزودن ماده</button>
+          <button class="btn btn-primary btn-sm" id="btnExecuteRawCalculation">محاسبه و پیشنهاد غذا</button>
+        </div>
+
+        <div id="rawCalcResultTableWrap" style="display: none; margin-top: 16px;">
+          <div class="table-container">
+            <table>
+              <thead><tr><th>ماده</th><th>انرژی</th><th>کالری</th><th>وزن (گرم)</th><th>P</th><th>C</th><th>F</th></tr></thead>
+              <tbody id="rawCalcResultTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="recipeSuggestionsContainer" style="display: none; margin-top: 20px;">
+          <h4 style="font-size: 0.9rem; margin-bottom: 8px;">🍽️ رسپی‌های منطبق با این اوزان:</h4>
+          <div id="recipesListWrap"></div>
+        </div>
       </div>
     </section>
 
-    <!-- ۶. اهداف و پروفایل -->
+    <!-- ۶. گزارش‌ها (نمودار خطی جامع بدون محدودیت روز) -->
+    <section id="reportsView" class="view-section">
+      <div class="macro-grid" id="reportKpiGrid" style="grid-template-columns: 1fr 1fr;"></div>
+      <div class="app-card">
+        <div class="card-header-styled">
+          <h3>روند کلی مصرف کالری روزانه (نمودار خطی پیوسته)</h3>
+          <span class="badge badge-basic" id="totalReportDaysBadge">همه روزهای ثبت‌شده</span>
+        </div>
+        <div style="height: 260px;"><canvas id="reportCaloriesChart"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ۷. اهداف و پروفایل -->
     <section id="profileGoalsView" class="view-section">
       <div class="app-card">
         <div class="card-header-styled"><h3>مشخصات بیومتریک و اهداف</h3></div>
@@ -702,44 +752,6 @@
       </div>
     </section>
 
-    <!-- ۷. محاسبه مواد اولیه و هوش رسپی -->
-    <section id="targetCalcView" class="view-section">
-      <div class="app-card">
-        <div class="card-header-styled">
-          <h3>🧮 محاسبه مواد اولیه و پیشنهاد رسپی</h3>
-          <span class="badge badge-basic">سقف صلب پروتئین</span>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-          <div><label>کالری کل (kcal) *</label><input type="number" id="rawCalcTotalTarget" value="2000"></div>
-          <div><label>پروتئین هدف دقیق (g) *</label><input type="number" id="rawCalcProteinTarget" value="140" style="border-color: var(--healthy-orange);"></div>
-          <div><label>کربوهیدرات (g - اختیاری):</label><input type="number" id="rawCalcCarbsTarget" placeholder="اختیاری"></div>
-          <div><label>چربی (g - اختیاری):</label><input type="number" id="rawCalcFatTarget" placeholder="اختیاری"></div>
-        </div>
-
-        <div id="rawIngredientsRowsContainer"></div>
-
-        <div style="display: flex; gap: 8px; margin: 12px 0;">
-          <button class="btn btn-secondary btn-sm" id="btnAddRawIngredientRow">+ افزودن ماده</button>
-          <button class="btn btn-primary btn-sm" id="btnExecuteRawCalculation">محاسبه و پیشنهاد غذا</button>
-        </div>
-
-        <div id="rawCalcResultTableWrap" style="display: none; margin-top: 16px;">
-          <div class="table-container">
-            <table>
-              <thead><tr><th>ماده</th><th>انرژی</th><th>کالری</th><th>وزن (گرم)</th><th>P</th><th>C</th><th>F</th></tr></thead>
-              <tbody id="rawCalcResultTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div id="recipeSuggestionsContainer" style="display: none; margin-top: 20px;">
-          <h4 style="font-size: 0.9rem; margin-bottom: 8px;">🍽️ رسپی‌های منطبق با این اوزان:</h4>
-          <div id="recipesListWrap"></div>
-        </div>
-      </div>
-    </section>
-
     <!-- ۸. بانک جامع غذا -->
     <section id="foodDbView" class="view-section">
       <div class="app-card">
@@ -786,7 +798,7 @@
 
   </main>
 
-  <!-- نوار ناوبری پایینی موبایلی (مشابه تصویر اول) -->
+  <!-- نوار ناوبری پایینی: ترتیب بازآرایی‌شده با قرارگیری محاسبه پس از فعالیت -->
   <nav class="bottom-nav">
     <button class="nav-item-btn active" data-view="dashboardView">
       <span class="icon">🏠</span>
@@ -796,13 +808,13 @@
       <span class="icon">🍎</span>
       <span>بشقاب</span>
     </button>
-    <button class="nav-item-btn" data-view="targetCalcView">
-      <span class="icon">🧮</span>
-      <span>محاسبه</span>
-    </button>
     <button class="nav-item-btn" data-view="activityView">
       <span class="icon">🏃</span>
       <span>فعالیت</span>
+    </button>
+    <button class="nav-item-btn" data-view="targetCalcView">
+      <span class="icon">🧮</span>
+      <span>محاسبه</span>
     </button>
     <button class="nav-item-btn" data-view="reportsView">
       <span class="icon">📊</span>
@@ -866,7 +878,7 @@
     const SUPABASE_ANON_KEY = "sb_publishable_OhbYs3YPMD1TzIycT3bvCw_8Ymy0AD_";
     const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-    // ۱. دیتابیس جامع مواد غذایی (USDA + سنتی ایرانی + حبوبات و کنسروها)
+    // ۱. دیتابیس جامع مواد غذایی
     const MASTER_FOODS = [
       { id: "leg_raw_lentil_brown", name: "عدس قهوه‌ای / سبز (خام)", category: "legumes_raw", state: "raw", calories: 353, protein: 25.8, carbs: 60.1, fat: 1.1 },
       { id: "leg_ckd_lentil_brown", name: "عدس آب‌پز پخته شده", category: "legumes_cooked", state: "cooked", calories: 116, protein: 9.0, carbs: 20.1, fat: 0.4 },
@@ -1029,11 +1041,10 @@
         this.currentUser = null;
         this.currentDate = this.getTodayDateString();
         this.charts = {};
-        this.activeReportRange = 'weekly';
         
         this.state = {
           theme: "light",
-          profile: { name: "کاربر ورزشکار", gender: "male", age: 30, height: 175, weight: 75.0, activityLevel: 1.375, goal: "cut", ratioProteinPerKg: 2.0, ratioFatPerKg: 0.9 },
+          profile: { name: "ورزشکار عزیز", gender: "male", age: 30, height: 175, weight: 75.0, activityLevel: 1.375, goal: "cut", ratioProteinPerKg: 2.0, ratioFatPerKg: 0.9 },
           goals: { mode: "auto", targetCalories: 2200, targetProtein: 150, targetCarbs: 235, targetFat: 70 },
           customFoods: [],
           foodLogs: {},
@@ -1221,7 +1232,7 @@
           await this.engine.fetchUserDataFromTables();
           document.getElementById('authOverlayWrapper').style.display = 'none';
           document.getElementById('userDisplayName').innerText = `سلام، ${this.engine.state.profile.name || 'ورزشکار عزیز'}`;
-          document.getElementById('cloudStatusBadge').innerText = `☁️ همگام با حساب: ${session.user.email}`;
+          document.getElementById('cloudStatusBadge').innerText = `همگام با حساب کاربری`;
           this.renderAllViews();
         } else {
           document.getElementById('authOverlayWrapper').style.display = 'flex';
@@ -1247,6 +1258,11 @@
       }
 
       bindEvents() {
+        // باز کردن مستقیم بخش پروفایل با کلیک روی عکس آواتار در هدر
+        document.getElementById('headerProfileAvatar').addEventListener('click', () => {
+          this.navTo('profileGoalsView');
+        });
+
         document.getElementById('btnGoToSignup').addEventListener('click', () => {
           document.getElementById('loginCard').classList.add('hidden');
           document.getElementById('signupCard').classList.remove('hidden');
@@ -1319,7 +1335,6 @@
           this.initTheme();
         });
 
-        // کلیک روی دکمه‌های نوار ناوبری پایینی
         document.querySelectorAll('.bottom-nav .nav-item-btn').forEach(btn => {
           btn.addEventListener('click', (e) => this.navTo(e.currentTarget.dataset.view));
         });
@@ -1443,7 +1458,7 @@
 
       async handleSaveProfile() {
         const p = this.engine.state.profile;
-        p.name = document.getElementById('profName').value.trim() || 'کاربر ورزشکار';
+        p.name = document.getElementById('profName').value.trim() || 'ورزشکار عزیز';
         p.gender = document.getElementById('profGender').value;
         p.age = parseInt(document.getElementById('profAge').value) || 30;
         p.height = parseFloat(document.getElementById('profHeight').value) || 170;
@@ -1494,14 +1509,35 @@
         const calPct = goals.targetCalories > 0 ? Math.round((summary.consumedCal / goals.targetCalories) * 100) : 0;
         document.getElementById('dashCalProgress').style.width = `${Math.min(100, calPct)}%`;
 
+        // پروتئین
+        const pTarget = goals.targetProtein || 1;
+        const pPct = Math.round((summary.consumedProtein / pTarget) * 100);
+        const pRem = Math.max(0, +(pTarget - summary.consumedProtein).toFixed(1));
         document.getElementById('dashConsumedProtein').textContent = `${summary.consumedProtein}g`;
-        document.getElementById('dashProteinTargetDisplay').textContent = `هدف: ${goals.targetProtein}g`;
+        document.getElementById('dashProteinTargetDisplay').textContent = `هدف: ${pTarget}g`;
+        document.getElementById('dashProteinPercent').textContent = `${pPct}% محقق‌شده`;
+        document.getElementById('dashProteinProgress').style.width = `${Math.min(100, pPct)}%`;
+        document.getElementById('dashProteinRemDisplay').textContent = `باقی‌مانده: ${pRem}g`;
 
+        // کربوهیدرات
+        const cTarget = goals.targetCarbs || 1;
+        const cPct = Math.round((summary.consumedCarbs / cTarget) * 100);
+        const cRem = Math.max(0, +(cTarget - summary.consumedCarbs).toFixed(1));
         document.getElementById('dashConsumedCarbs').textContent = `${summary.consumedCarbs}g`;
-        document.getElementById('dashCarbsTargetDisplay').textContent = `هدف: ${goals.targetCarbs}g`;
+        document.getElementById('dashCarbsTargetDisplay').textContent = `هدف: ${cTarget}g`;
+        document.getElementById('dashCarbsPercent').textContent = `${cPct}% محقق‌شده`;
+        document.getElementById('dashCarbsProgress').style.width = `${Math.min(100, cPct)}%`;
+        document.getElementById('dashCarbsRemDisplay').textContent = `باقی‌مانده: ${cRem}g`;
 
+        // چربی (کلمه مفید کاملاً حذف شده است)
+        const fTarget = goals.targetFat || 1;
+        const fPct = Math.round((summary.consumedFat / fTarget) * 100);
+        const fRem = Math.max(0, +(fTarget - summary.consumedFat).toFixed(1));
         document.getElementById('dashConsumedFat').textContent = `${summary.consumedFat}g`;
-        document.getElementById('dashFatTargetDisplay').textContent = `هدف: ${goals.targetFat}g`;
+        document.getElementById('dashFatTargetDisplay').textContent = `هدف: ${fTarget}g`;
+        document.getElementById('dashFatPercent').textContent = `${fPct}% محقق‌شده`;
+        document.getElementById('dashFatProgress').style.width = `${Math.min(100, fPct)}%`;
+        document.getElementById('dashFatRemDisplay').textContent = `باقی‌مانده: ${fRem}g`;
 
         document.getElementById('dashBurnedCal').textContent = `${summary.burnedCal} kcal`;
         const wLogs = this.engine.state.weightLogs;
@@ -1573,7 +1609,7 @@
           });
         }
 
-        const fullReport = `گزارش پایش Nutrition OS (نسخه هلثی)
+        const fullReport = `گزارش پایش Nutrition OS
 تاریخ: ${shamsi} (${this.engine.currentDate})
 وزن: ${lastWeight} kg
 --- اهداف روزانه ---
@@ -1975,7 +2011,6 @@ ${activityReport}`;
 
         const mainProtein = proteinSources.length > 0 ? proteinSources[0] : selectedFoods[0];
 
-        // سقف صلب پروتئین
         const neededProtGrams = Math.floor((exactProtTarget / (mainProtein.protein || 1)) * 100);
         const protCalories = Math.round((neededProtGrams / 100) * mainProtein.calories);
         let remainingCal = Math.max(0, totalCalTarget - protCalories);
@@ -2044,7 +2079,7 @@ ${activityReport}`;
         });
 
         if (matchedRecipes.length === 0) {
-          listWrap.innerHTML = `<div style="color:var(--text-muted); font-size:0.8rem; padding:8px;">رسپی مستقیمی در بانک یافت نشد. می‌توانید اقلام را مستقیماً مطابق مقادیر گرمی محاسبه‌شده به صورت پخته، گریل یا بخارپز مصرف نمایید.</div>`;
+          listWrap.innerHTML = `<div style="color:var(--text-muted); font-size:0.8rem; padding:8px;">رسپی مستقیمی در بانک یافت نشد. می‌توانید اقلام را مستقیماً مطابق مقادیر گرمی محاسبه‌شده مصرف نمایید.</div>`;
         } else {
           matchedRecipes.forEach(rec => {
             const card = document.createElement('div');
@@ -2144,47 +2179,81 @@ ${activityReport}`;
         this.renderFullFoodDatabaseTable();
       }
 
+      // بخش گزارش‌ها: استخراج تمام روزهای ثبت‌شده در دیتابیس بدون هیچ محدودیتی و رسم به صورت نمودار خطی پیوسته
       renderReports() {
-        const days = this.activeReportRange === 'weekly' ? 7 : 30;
-        const dateList = [];
-        const today = new Date();
-        for (let i = days - 1; i >= 0; i--) {
-          const d = new Date(); d.setDate(today.getDate() - i);
-          dateList.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
-        }
+        const loggedDatesSet = new Set(Object.keys(this.engine.state.foodLogs));
+        // اضافه کردن تاریخ امروز به لیست حتی اگر روز اول باشد
+        loggedDatesSet.add(this.engine.getTodayDateString());
 
-        let totalCal = 0, loggedDays = 0;
+        const sortedDates = Array.from(loggedDatesSet).sort();
         const calData = [];
-        dateList.forEach(dStr => {
+        let totalCal = 0;
+        let activeDaysCount = 0;
+
+        sortedDates.forEach(dStr => {
           const s = this.engine.getDailySummary(dStr);
           calData.push(s.consumedCal);
-          if (s.logsCount > 0) { loggedDays++; totalCal += s.consumedCal; }
+          if (s.consumedCal > 0 || s.logsCount > 0) {
+            activeDaysCount++;
+            totalCal += s.consumedCal;
+          }
         });
 
-        const avgCal = loggedDays > 0 ? Math.round(totalCal / loggedDays) : 0;
+        const avgCal = activeDaysCount > 0 ? Math.round(totalCal / activeDaysCount) : 0;
+        
         document.getElementById('reportKpiGrid').innerHTML = `
-          <div class="macro-card"><div class="m-title">میانگین روزانه</div><div class="m-val" style="color:var(--healthy-orange);">${avgCal}</div><div class="m-sub">kcal در روز</div></div>
-          <div class="macro-card"><div class="m-title">روزهای ثبت غذا</div><div class="m-val">${loggedDays}</div><div class="m-sub">از ${days} روز</div></div>
+          <div class="macro-card">
+            <div class="m-title">میانگین کالری روزانه</div>
+            <div class="m-val" style="color:var(--healthy-orange);">${avgCal}</div>
+            <div class="m-sub">kcal در روزهای فعال</div>
+          </div>
+          <div class="macro-card">
+            <div class="m-title">تعداد روزهای ثبت‌شده</div>
+            <div class="m-val">${activeDaysCount}</div>
+            <div class="m-sub">از مجموع ${sortedDates.length} روز کل</div>
+          </div>
         `;
+
+        document.getElementById('totalReportDaysBadge').textContent = `${sortedDates.length} روز پایش‌شده`;
 
         const canvas = document.getElementById('reportCaloriesChart');
         if (this.charts.reportCal) this.charts.reportCal.destroy();
         this.charts.reportCal = new Chart(canvas.getContext('2d'), {
-          type: 'bar',
+          type: 'line',
           data: {
-            labels: dateList.map(d => this.engine.toShamsiDisplay(d)),
-            datasets: [{ label: 'کالری روزانه', data: calData, backgroundColor: '#0d5338', borderRadius: 8 }]
+            labels: sortedDates.map(d => this.engine.toShamsiDisplay(d)),
+            datasets: [{
+              label: 'کالری مصرفی (kcal)',
+              data: calData,
+              borderColor: '#f77f00',
+              backgroundColor: 'rgba(247, 127, 0, 0.08)',
+              borderWidth: 2.5,
+              tension: 0.3,
+              fill: true,
+              pointBackgroundColor: '#0d5338',
+              pointBorderColor: '#ffffff',
+              pointBorderWidth: 2,
+              pointRadius: 4,
+              pointHoverRadius: 6
+            }]
           },
-          options: { responsive: true, maintainAspectRatio: false }
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(0, 0, 0, 0.05)' }
+              },
+              x: {
+                grid: { display: false }
+              }
+            }
+          }
         });
-      }
-
-      switchReportTab(range) {
-        this.activeReportRange = range;
-        document.querySelectorAll('#reportsView .tab-pill').forEach(b => b.classList.remove('active'));
-        if (range === 'weekly') document.getElementById('btnTabWeeklyReport').classList.add('active');
-        if (range === 'monthly') document.getElementById('btnTabMonthlyReport').classList.add('active');
-        this.renderReports();
       }
     }
 
