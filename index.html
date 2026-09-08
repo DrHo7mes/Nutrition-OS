@@ -8,14 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  
-  <!-- کتابخانه Chart.js همراه با CDN پشتیبان ضد فیلتر -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script>
-    if (typeof Chart === 'undefined') {
-      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>');
-    }
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -91,6 +84,7 @@
       box-shadow: var(--shadow-lg);
     }
 
+    /* هدر موبایلی بهینه */
     header.app-header {
       background-color: var(--bg-surface);
       border-bottom: 1px solid var(--border-color);
@@ -153,6 +147,7 @@
     .view-section.active { display: block; animation: fadeIn 0.25s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
+    /* کارت بزرگ کالری */
     .hero-calorie-card {
       background: linear-gradient(135deg, var(--healthy-green-dark), var(--healthy-green-deep));
       color: var(--text-white);
@@ -178,6 +173,7 @@
     .hero-progress-bg { background: rgba(255, 255, 255, 0.2); height: 8px; border-radius: var(--radius-full); margin-top: 14px; overflow: hidden; }
     .hero-progress-fill { background: var(--healthy-orange); height: 100%; border-radius: var(--radius-full); transition: width 0.4s ease; }
 
+    /* کارت‌های ماکرو همراه با درصد، باقی‌مانده و پروگرس بار */
     .macro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
     .macro-card {
       background: var(--bg-surface);
@@ -307,6 +303,7 @@
     .recipe-title { font-size: 0.95rem; font-weight: 800; color: var(--healthy-green-dark); display: flex; justify-content: space-between; align-items: center; }
     .recipe-steps { font-size: 0.82rem; line-height: 1.7; color: var(--text-main); padding-right: 18px; margin-top: 6px; }
 
+    /* نوار پایینی: جابجایی تب محاسبه به بعد از فعالیت */
     nav.bottom-nav {
       position: fixed;
       bottom: 0;
@@ -413,7 +410,7 @@
     </div>
   </div>
 
-  <!-- هدر اپلیکیشن با امکان کلیک روی آواتار -->
+  <!-- هدر اپلیکیشن به سبک صفحه اصلی عکس ارسالی (با قابلیت لمس آواتار برای ورود به پروفایل) -->
   <header class="app-header">
     <div class="header-container">
       <div class="user-greeting">
@@ -437,7 +434,7 @@
 
   <main class="app-main">
 
-    <!-- ۱. داشبورد -->
+    <!-- ۱. داشبورد (با درصد پیشرفت، خط پرشونده و تفکیک باقی‌مانده ماکروها) -->
     <section id="dashboardView" class="view-section active">
       
       <div class="hero-calorie-card">
@@ -576,7 +573,7 @@
           <div class="macro-card"><div class="m-title">تغییر</div><div class="m-val" id="weightDiffVal" style="font-size:0.95rem;">--</div></div>
           <div class="macro-card"><div class="m-title">میانگین</div><div class="m-val" id="weightAvgVal" style="font-size:0.95rem;">--</div></div>
         </div>
-        <div style="position: relative; height: 220px; width: 100%; margin-top: 14px;"><canvas id="weightHistoryChart"></canvas></div>
+        <div style="height: 220px; margin-top: 14px;"><canvas id="weightHistoryChart"></canvas></div>
       </div>
 
       <div class="app-card">
@@ -688,7 +685,7 @@
       </div>
     </section>
 
-    <!-- ۶. گزارش‌ها (نمودار خطی پیوسته تضمین‌شده) -->
+    <!-- ۶. گزارش‌ها (نمودار خطی جامع بدون محدودیت روز) -->
     <section id="reportsView" class="view-section">
       <div class="macro-grid" id="reportKpiGrid" style="grid-template-columns: 1fr 1fr;"></div>
       <div class="app-card">
@@ -696,9 +693,7 @@
           <h3>روند کلی مصرف کالری روزانه (نمودار خطی پیوسته)</h3>
           <span class="badge badge-basic" id="totalReportDaysBadge">همه روزهای ثبت‌شده</span>
         </div>
-        <div style="position: relative; height: 260px; width: 100%;">
-          <canvas id="reportCaloriesChart"></canvas>
-        </div>
+        <div style="height: 260px;"><canvas id="reportCaloriesChart"></canvas></div>
       </div>
     </section>
 
@@ -803,7 +798,7 @@
 
   </main>
 
-  <!-- نوار ناوبری پایینی -->
+  <!-- نوار ناوبری پایینی: ترتیب بازآرایی‌شده با قرارگیری محاسبه پس از فعالیت -->
   <nav class="bottom-nav">
     <button class="nav-item-btn active" data-view="dashboardView">
       <span class="icon">🏠</span>
@@ -1263,6 +1258,7 @@
       }
 
       bindEvents() {
+        // باز کردن مستقیم بخش پروفایل با کلیک روی عکس آواتار در هدر
         document.getElementById('headerProfileAvatar').addEventListener('click', () => {
           this.navTo('profileGoalsView');
         });
@@ -1417,12 +1413,8 @@
         document.querySelector(`.bottom-nav .nav-item-btn[data-view="${viewId}"]`)?.classList.add('active');
         
         if (viewId === 'profileGoalsView') this.syncProfileForm();
-        if (viewId === 'reportsView') {
-          setTimeout(() => this.renderReports(), 60);
-        }
-        if (viewId === 'weightView') {
-          setTimeout(() => this.renderWeightHistoryChart(), 60);
-        }
+        if (viewId === 'reportsView') this.renderReports();
+        if (viewId === 'weightView') this.renderWeightHistoryChart();
         if (viewId === 'foodDbView') this.renderFullFoodDatabaseTable();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
@@ -1434,6 +1426,7 @@
         this.renderDailyMealLogs();
         this.renderDailyActivities();
         this.renderWeightHistoryTable();
+        this.renderWeightHistoryChart();
         this.renderFullFoodDatabaseTable();
         this.initIngredientDefaultRows();
       }
@@ -1536,7 +1529,7 @@
         document.getElementById('dashCarbsProgress').style.width = `${Math.min(100, cPct)}%`;
         document.getElementById('dashCarbsRemDisplay').textContent = `باقی‌مانده: ${cRem}g`;
 
-        // چربی (بدون کلمه مفید)
+        // چربی (کلمه مفید کاملاً حذف شده است)
         const fTarget = goals.targetFat || 1;
         const fPct = Math.round((summary.consumedFat / fTarget) * 100);
         const fRem = Math.max(0, +(fTarget - summary.consumedFat).toFixed(1));
@@ -1616,7 +1609,7 @@
           });
         }
 
-        const fullReport = `گزارش پایش Nutrition OS (نسخه هلثی)
+        const fullReport = `گزارش پایش Nutrition OS
 تاریخ: ${shamsi} (${this.engine.currentDate})
 وزن: ${lastWeight} kg
 --- اهداف روزانه ---
@@ -1826,7 +1819,6 @@ ${activityReport}`;
       }
 
       renderWeightHistoryChart() {
-        if (!window.Chart) return;
         const canvas = document.getElementById('weightHistoryChart');
         if (!canvas) return;
         let logs = [...this.engine.state.weightLogs].sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -2087,7 +2079,7 @@ ${activityReport}`;
         });
 
         if (matchedRecipes.length === 0) {
-          listWrap.innerHTML = `<div style="color:var(--text-muted); font-size:0.8rem; padding:8px;">رسپی مستقیمی در بانک یافت نشد. می‌توانید اقلام را مستقیماً مطابق مقادیر گرمی محاسبه‌شده به صورت پخته، گریل یا بخارپز مصرف نمایید.</div>`;
+          listWrap.innerHTML = `<div style="color:var(--text-muted); font-size:0.8rem; padding:8px;">رسپی مستقیمی در بانک یافت نشد. می‌توانید اقلام را مستقیماً مطابق مقادیر گرمی محاسبه‌شده مصرف نمایید.</div>`;
         } else {
           matchedRecipes.forEach(rec => {
             const card = document.createElement('div');
@@ -2187,54 +2179,21 @@ ${activityReport}`;
         this.renderFullFoodDatabaseTable();
       }
 
-      // ساخت نمودار خطی پیوسته و جامع برای گزارش‌ها
+      // بخش گزارش‌ها: استخراج تمام روزهای ثبت‌شده در دیتابیس بدون هیچ محدودیتی و رسم به صورت نمودار خطی پیوسته
       renderReports() {
-        if (!window.Chart) {
-          console.warn("کتابخانه Chart.js هنوز بارگذاری نشده است.");
-          return;
-        }
-        const canvas = document.getElementById('reportCaloriesChart');
-        if (!canvas) return;
+        const loggedDatesSet = new Set(Object.keys(this.engine.state.foodLogs));
+        // اضافه کردن تاریخ امروز به لیست حتی اگر روز اول باشد
+        loggedDatesSet.add(this.engine.getTodayDateString());
 
-        // استخراج تمام تاریخ‌های دارای ثبت در دیتابیس
-        const loggedDates = Object.keys(this.engine.state.foodLogs || {}).filter(d => {
-          const s = this.engine.getDailySummary(d);
-          return s.consumedCal > 0 || s.logsCount > 0;
-        });
-
-        const todayStr = this.engine.getTodayDateString();
-        
-        // ساخت بازه زمانی پیوسته (حداقل ۷ روز اخیر یا از اولین روز ثبت تا به امروز)
-        let allDates = [];
-        let startDate = new Date();
-        startDate.setDate(startDate.getDate() - 6);
-
-        if (loggedDates.length > 0) {
-          const sortedLogged = [...loggedDates].sort();
-          const firstLoggedDate = new Date(sortedLogged[0]);
-          if (firstLoggedDate < startDate) {
-            startDate = firstLoggedDate;
-          }
-        }
-
-        const endDate = new Date(todayStr);
-        let curr = new Date(startDate);
-        while (curr <= endDate) {
-          const y = curr.getFullYear();
-          const m = String(curr.getMonth() + 1).padStart(2, '0');
-          const d = String(curr.getDate()).padStart(2, '0');
-          allDates.push(`${y}-${m}-${d}`);
-          curr.setDate(curr.getDate() + 1);
-        }
-
+        const sortedDates = Array.from(loggedDatesSet).sort();
         const calData = [];
         let totalCal = 0;
         let activeDaysCount = 0;
 
-        allDates.forEach(dStr => {
+        sortedDates.forEach(dStr => {
           const s = this.engine.getDailySummary(dStr);
           calData.push(s.consumedCal);
-          if (s.consumedCal > 0) {
+          if (s.consumedCal > 0 || s.logsCount > 0) {
             activeDaysCount++;
             totalCal += s.consumedCal;
           }
@@ -2242,77 +2201,55 @@ ${activityReport}`;
 
         const avgCal = activeDaysCount > 0 ? Math.round(totalCal / activeDaysCount) : 0;
         
-        const kpiGrid = document.getElementById('reportKpiGrid');
-        if (kpiGrid) {
-          kpiGrid.innerHTML = `
-            <div class="macro-card">
-              <div class="m-title">میانگین کالری روزانه</div>
-              <div class="m-val" style="color:var(--healthy-orange);">${avgCal}</div>
-              <div class="m-sub">kcal در روزهای فعال</div>
-            </div>
-            <div class="macro-card">
-              <div class="m-title">روزهای ثبت‌شده</div>
-              <div class="m-val">${activeDaysCount}</div>
-              <div class="m-sub">از مجموع ${allDates.length} روز کل</div>
-            </div>
-          `;
-        }
+        document.getElementById('reportKpiGrid').innerHTML = `
+          <div class="macro-card">
+            <div class="m-title">میانگین کالری روزانه</div>
+            <div class="m-val" style="color:var(--healthy-orange);">${avgCal}</div>
+            <div class="m-sub">kcal در روزهای فعال</div>
+          </div>
+          <div class="macro-card">
+            <div class="m-title">تعداد روزهای ثبت‌شده</div>
+            <div class="m-val">${activeDaysCount}</div>
+            <div class="m-sub">از مجموع ${sortedDates.length} روز کل</div>
+          </div>
+        `;
 
-        const badge = document.getElementById('totalReportDaysBadge');
-        if (badge) {
-          badge.textContent = `${allDates.length} روز پایش‌شده`;
-        }
+        document.getElementById('totalReportDaysBadge').textContent = `${sortedDates.length} روز پایش‌شده`;
 
-        if (this.charts.reportCal) {
-          this.charts.reportCal.destroy();
-        }
-
+        const canvas = document.getElementById('reportCaloriesChart');
+        if (this.charts.reportCal) this.charts.reportCal.destroy();
         this.charts.reportCal = new Chart(canvas.getContext('2d'), {
           type: 'line',
           data: {
-            labels: allDates.map(d => this.engine.toShamsiDisplay(d)),
+            labels: sortedDates.map(d => this.engine.toShamsiDisplay(d)),
             datasets: [{
               label: 'کالری مصرفی (kcal)',
               data: calData,
               borderColor: '#f77f00',
-              backgroundColor: 'rgba(247, 127, 0, 0.12)',
-              borderWidth: 3,
-              tension: 0.35,
+              backgroundColor: 'rgba(247, 127, 0, 0.08)',
+              borderWidth: 2.5,
+              tension: 0.3,
               fill: true,
               pointBackgroundColor: '#0d5338',
               pointBorderColor: '#ffffff',
               pointBorderWidth: 2,
-              pointRadius: 4.5,
-              pointHoverRadius: 7
+              pointRadius: 4,
+              pointHoverRadius: 6
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: { duration: 350 },
             plugins: {
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    return `کالری: ${context.parsed.y} kcal`;
-                  }
-                }
-              }
+              legend: { display: false }
             },
             scales: {
               y: {
                 beginAtZero: true,
-                grid: { color: 'rgba(0, 0, 0, 0.06)' },
-                ticks: {
-                  font: { family: 'Vazirmatn' }
-                }
+                grid: { color: 'rgba(0, 0, 0, 0.05)' }
               },
               x: {
-                grid: { display: false },
-                ticks: {
-                  font: { family: 'Vazirmatn', size: 10 }
-                }
+                grid: { display: false }
               }
             }
           }
