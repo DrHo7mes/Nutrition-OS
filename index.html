@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   
-  <!-- کتابخانه Chart.js همراه با CDN پشتیبان ضد فیلتر -->
+  <!-- کتابخانه‌های مورد نیاز با پشتیبان CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script>
     if (typeof Chart === 'undefined') {
@@ -17,42 +17,43 @@
     }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    if (typeof supabase === 'undefined') {
+      document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\/script>');
+    }
+  </script>
+
+  <!-- اتصال به دیتابیس جداگانه و سبک‌سازی ایندکس -->
+  <script src="foods.js"></script>
 
   <style>
     :root {
       --font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      
       --healthy-green-dark: #0d5338;
       --healthy-green-deep: #083826;
       --healthy-green-light: #e6f4ed;
       --healthy-orange: #f77f00;
       --healthy-orange-light: #fff0e0;
       --healthy-orange-dark: #d96d00;
-      
       --color-primary: #0d5338;
       --color-primary-light: #e6f4ed;
       --color-accent: #f77f00;
       --color-danger: #e63946;
       --color-warning: #f59e0b;
-      
       --bg-body: #f4f7f6;
       --bg-surface: #ffffff;
       --bg-surface-alt: #f8faf9;
       --border-color: #e5ece8;
-      
       --text-main: #14211c;
       --text-muted: #627b70;
       --text-white: #ffffff;
-      
       --radius-sm: 10px;
       --radius-md: 16px;
       --radius-lg: 24px;
       --radius-full: 9999px;
-      
       --shadow-sm: 0 2px 8px rgba(13, 83, 56, 0.04);
       --shadow-md: 0 8px 20px rgba(13, 83, 56, 0.08);
       --shadow-lg: 0 14px 30px rgba(13, 83, 56, 0.12);
-      
       --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -361,7 +362,7 @@
 </head>
 <body>
 
-  <!-- پنجره احراز هویت -->
+  <!-- پنجره ورود -->
   <div id="authOverlayWrapper">
     <div class="auth-box" id="loginCard">
       <div style="text-align: center; margin-bottom: 20px;">
@@ -413,7 +414,6 @@
     </div>
   </div>
 
-  <!-- هدر اپلیکیشن با امکان کلیک روی آواتار -->
   <header class="app-header">
     <div class="header-container">
       <div class="user-greeting">
@@ -439,7 +439,6 @@
 
     <!-- ۱. داشبورد -->
     <section id="dashboardView" class="view-section active">
-      
       <div class="hero-calorie-card">
         <div class="hero-top">
           <span>کالری کل مصرفی امروز</span>
@@ -452,7 +451,6 @@
         </div>
       </div>
 
-      <!-- ۳ کارت اختصاصی درشت‌مغذی‌ها با درصد و نوار وضعیت -->
       <div class="macro-grid">
         <div class="macro-card">
           <div class="m-title">پروتئین</div>
@@ -650,7 +648,7 @@
       </div>
     </section>
 
-    <!-- ۵. محاسبه مواد اولیه و هوش رسپی (منتقل شده به بعد از فعالیت) -->
+    <!-- ۵. محاسبه مواد اولیه و هوش رسپی -->
     <section id="targetCalcView" class="view-section">
       <div class="app-card">
         <div class="card-header-styled">
@@ -688,7 +686,7 @@
       </div>
     </section>
 
-    <!-- ۶. گزارش‌ها (نمودار خطی پیوسته تضمین‌شده) -->
+    <!-- ۶. گزارش‌ها -->
     <section id="reportsView" class="view-section">
       <div class="macro-grid" id="reportKpiGrid" style="grid-template-columns: 1fr 1fr;"></div>
       <div class="app-card">
@@ -803,7 +801,6 @@
 
   </main>
 
-  <!-- نوار ناوبری پایینی -->
   <nav class="bottom-nav">
     <button class="nav-item-btn active" data-view="dashboardView">
       <span class="icon">🏠</span>
@@ -831,7 +828,6 @@
     </button>
   </nav>
 
-  <!-- مدال تعریف ماده جدید -->
   <div class="modal-overlay" id="customFoodModal">
     <div class="modal-content">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
@@ -881,609 +877,23 @@
   <script>
     const SUPABASE_URL = "https://jrtsuggilvcfbvqqvhwp.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_OhbYs3YPMD1TzIycT3bvCw_8Ymy0AD_";
-    const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+    
+    let supabaseClient = null;
+    try {
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch (e) {
+      console.warn("خطا در ایجاد کلاینت سوپابیس:", e);
+    }
 
-    // ۱. دیتابیس جامع مواد غذایی
-    const MASTER_FOODS = [
-      { id: "leg_raw_lentil_brown", name: "عدس قهوه‌ای / سبز (خام)", category: "legumes_raw", state: "raw", calories: 353, protein: 25.8, carbs: 60.1, fat: 1.1 },
-      { id: "leg_ckd_lentil_brown", name: "عدس آب‌پز پخته شده", category: "legumes_cooked", state: "cooked", calories: 116, protein: 9.0, carbs: 20.1, fat: 0.4 },
-      { id: "leg_raw_lentil_red", name: "دال عدس قرمز (خام)", category: "legumes_raw", state: "raw", calories: 345, protein: 24.5, carbs: 59.5, fat: 1.0 },
-      { id: "leg_ckd_lentil_red", name: "دال عدس پخته شده", category: "legumes_cooked", state: "cooked", calories: 112, protein: 8.5, carbs: 19.5, fat: 0.4 },
-      { id: "leg_raw_chickpea", name: "نخود آبگوشتی درشت (خام)", category: "legumes_raw", state: "raw", calories: 364, protein: 19.3, carbs: 60.6, fat: 6.0 },
-      { id: "leg_ckd_chickpea", name: "نخود آب‌پز پخته شده", category: "legumes_cooked", state: "cooked", calories: 164, protein: 8.9, carbs: 27.4, fat: 2.6 },
-      { id: "leg_raw_split_pea", name: "لپه زرد (خام)", category: "legumes_raw", state: "raw", calories: 341, protein: 24.5, carbs: 60.0, fat: 1.2 },
-      { id: "leg_ckd_split_pea", name: "لپه پخته شده", category: "legumes_cooked", state: "cooked", calories: 118, protein: 8.3, carbs: 21.0, fat: 0.5 },
-      { id: "leg_raw_pinto", name: "لوبیا چیتی (خام)", category: "legumes_raw", state: "raw", calories: 347, protein: 21.4, carbs: 62.5, fat: 1.2 },
-      { id: "leg_ckd_pinto", name: "لوبیا چیتی آب‌پز شده", category: "legumes_cooked", state: "cooked", calories: 139, protein: 9.7, carbs: 25.1, fat: 0.5 },
-      { id: "leg_raw_red_kidney", name: "لوبیا قرمز کپسولی (خام)", category: "legumes_raw", state: "raw", calories: 333, protein: 23.6, carbs: 60.0, fat: 0.8 },
-      { id: "leg_ckd_red_kidney", name: "لوبیا قرمز پخته شده", category: "legumes_cooked", state: "cooked", calories: 127, protein: 8.7, carbs: 22.8, fat: 0.5 },
-      { id: "leg_raw_white_bean", name: "لوبیا سفید آبگوشتی (خام)", category: "legumes_raw", state: "raw", calories: 335, protein: 23.0, carbs: 61.0, fat: 0.9 },
-      { id: "leg_ckd_white_bean", name: "لوبیا سفید پخته شده", category: "legumes_cooked", state: "cooked", calories: 139, protein: 9.7, carbs: 25.0, fat: 0.4 },
-      { id: "leg_raw_blackeye", name: "لوبیا چشم‌بلبلی (خام)", category: "legumes_raw", state: "raw", calories: 336, protein: 23.5, carbs: 60.0, fat: 1.3 },
-      { id: "leg_ckd_blackeye", name: "لوبیا چشم‌بلبلی پخته شده", category: "legumes_cooked", state: "cooked", calories: 116, protein: 7.7, carbs: 21.0, fat: 0.5 },
-      { id: "leg_raw_black_bean", name: "لوبیا سیاه (خام)", category: "legumes_raw", state: "raw", calories: 341, protein: 21.6, carbs: 62.4, fat: 1.4 },
-      { id: "leg_ckd_black_bean", name: "لوبیا سیاه پخته شده", category: "legumes_cooked", state: "cooked", calories: 132, protein: 8.9, carbs: 23.7, fat: 0.5 },
-      { id: "leg_raw_mung", name: "ماش سبز (خام)", category: "legumes_raw", state: "raw", calories: 347, protein: 23.8, carbs: 62.6, fat: 1.1 },
-      { id: "leg_ckd_mung", name: "ماش پخته شده", category: "legumes_cooked", state: "cooked", calories: 105, protein: 7.0, carbs: 19.1, fat: 0.4 },
-      { id: "leg_raw_fava", name: "باقلا خشک زرد (خام)", category: "legumes_raw", state: "raw", calories: 341, protein: 26.1, carbs: 58.3, fat: 1.5 },
-      { id: "leg_raw_green_fava", name: "باقلا سبز خام بی‌پوست", category: "legumes_raw", state: "raw", calories: 88, protein: 7.9, carbs: 15.0, fat: 0.7 },
-      { id: "leg_ckd_green_fava", name: "باقلا سبز پخته با نمک", category: "legumes_cooked", state: "cooked", calories: 110, protein: 7.6, carbs: 19.5, fat: 0.5 },
-      { id: "leg_raw_soybean", name: "دانه سویا روغنی (خام)", category: "legumes_raw", state: "raw", calories: 446, protein: 36.5, carbs: 30.2, fat: 19.9 },
-      { id: "leg_ckd_soybean", name: "دانه سویا آب‌پز شده", category: "legumes_cooked", state: "cooked", calories: 173, protein: 16.6, carbs: 9.9, fat: 9.0 },
-      { id: "leg_textured_soy", name: "سویا بافت‌دار گوشتی (خشک خام)", category: "legumes_raw", state: "raw", calories: 335, protein: 51.5, carbs: 31.0, fat: 1.2 },
-
-      { id: "cn_tuna_water", name: "کنسرو تن ماهی در آب‌نمک (رژیمی)", category: "canned", state: "cooked", calories: 116, protein: 25.5, carbs: 0, fat: 0.8 },
-      { id: "cn_tuna_oil", name: "کنسرو تن ماهی در روغن (روغن‌کشیده)", category: "canned", state: "cooked", calories: 198, protein: 29.0, carbs: 0, fat: 8.2 },
-      { id: "cn_tuna_chili", name: "کنسرو تن ماهی فلفلی در روغن", category: "canned", state: "cooked", calories: 205, protein: 28.0, carbs: 1.0, fat: 9.5 },
-      { id: "cn_tuna_dill", name: "کنسرو تن ماهی با شوید", category: "canned", state: "cooked", calories: 195, protein: 28.5, carbs: 0.5, fat: 8.0 },
-      { id: "cn_sardine_water", name: "کنسرو ساردین در آب‌نمک", category: "canned", state: "cooked", calories: 140, protein: 22.0, carbs: 0, fat: 5.5 },
-      { id: "cn_sardine_oil", name: "کنسرو ساردین در روغن زیتون/مایع", category: "canned", state: "cooked", calories: 208, protein: 24.6, carbs: 0, fat: 11.5 },
-      { id: "cn_sardine_tomato", name: "کنسرو ساردین در سس گوجه", category: "canned", state: "cooked", calories: 185, protein: 21.0, carbs: 2.5, fat: 10.0 },
-      { id: "cn_kilka_oil", name: "کنسرو ماهی کیلکا در روغن", category: "canned", state: "cooked", calories: 190, protein: 22.0, carbs: 0, fat: 11.0 },
-      { id: "cn_kilka_tomato", name: "کنسرو ماهی کیلکا در سس گوجه", category: "canned", state: "cooked", calories: 165, protein: 19.5, carbs: 3.5, fat: 8.0 },
-      { id: "cn_salmon_water", name: "کنسرو ماهی سالمون در آب‌نمک", category: "canned", state: "cooked", calories: 142, protein: 20.0, carbs: 0, fat: 6.5 },
-      { id: "cn_pinto_beans", name: "کنسرو خوراک لوبیا چیتی ساده", category: "canned", state: "cooked", calories: 110, protein: 6.8, carbs: 19.5, fat: 0.8 },
-      { id: "cn_pinto_mushroom", name: "کنسرو خوراک لوبیا چیتی با قارچ", category: "canned", state: "cooked", calories: 115, protein: 7.0, carbs: 20.0, fat: 1.0 },
-      { id: "cn_chickpeas", name: "کنسرو نخود آب‌پز آماده", category: "canned", state: "cooked", calories: 128, protein: 7.2, carbs: 20.8, fat: 2.0 },
-      { id: "cn_lentils", name: "کنسرو خوراک عدسی آماده", category: "canned", state: "cooked", calories: 105, protein: 7.5, carbs: 17.5, fat: 0.9 },
-      { id: "cn_sweetcorn", name: "کنسرو ذرت شیرین طلایی", category: "canned", state: "cooked", calories: 86, protein: 3.2, carbs: 19.0, fat: 1.2 },
-      { id: "cn_greenpeas", name: "کنسرو نخود فرنگی لطیف", category: "canned", state: "cooked", calories: 70, protein: 4.8, carbs: 12.5, fat: 0.4 },
-      { id: "cn_mixed_veg", name: "کنسرو سبزیجات مخلوط", category: "canned", state: "cooked", calories: 65, protein: 3.0, carbs: 13.0, fat: 0.5 },
-      { id: "cn_mushroom_slice", name: "کنسرو قارچ اسلایس در آب‌نمک", category: "canned", state: "cooked", calories: 24, protein: 2.8, carbs: 3.5, fat: 0.3 },
-      { id: "cn_olives_green", name: "کنسرو زیتون سبز بدون هسته", category: "canned", state: "cooked", calories: 145, protein: 1.0, carbs: 3.8, fat: 15.3 },
-      { id: "cn_olives_black", name: "کنسرو زیتون سیاه در آب‌نمک", category: "canned", state: "cooked", calories: 165, protein: 1.2, carbs: 4.5, fat: 16.5 },
-      { id: "cn_greenbeans", name: "کنسرو لوبیا سبز خردشده", category: "canned", state: "cooked", calories: 25, protein: 1.4, carbs: 4.5, fat: 0.2 },
-      { id: "cn_eggplant_food", name: "کنسرو خوراک بادمجان", category: "canned", state: "cooked", calories: 95, protein: 1.8, carbs: 9.0, fat: 6.0 },
-      { id: "cn_kashk_bademjan", name: "کنسرو کشک بادمجان آماده", category: "canned", state: "cooked", calories: 140, protein: 4.2, carbs: 8.5, fat: 10.0 },
-      { id: "cn_ghormeh", name: "کنسرو خورشت قورمه‌سبزی با گوشت", category: "canned", state: "cooked", calories: 160, protein: 9.0, carbs: 7.0, fat: 11.0 },
-      { id: "cn_gheimeh", name: "کنسرو خورشت قیمه سیب‌زمینی", category: "canned", state: "cooked", calories: 168, protein: 8.5, carbs: 13.5, fat: 9.0 },
-      { id: "cn_fesenjan", name: "کنسرو خورشت فسنجان آماده", category: "canned", state: "cooked", calories: 245, protein: 7.5, carbs: 16.0, fat: 17.5 },
-      { id: "cn_beef_stew", name: "کنسرو خوراک گوشت و لوبیا", category: "canned", state: "cooked", calories: 135, protein: 11.0, carbs: 12.0, fat: 4.5 },
-      { id: "cn_pineapple", name: "کمپوت آناناس با شربت رقیق", category: "canned", state: "cooked", calories: 75, protein: 0.4, carbs: 19.5, fat: 0.1 },
-      { id: "cn_peach", name: "کمپوت هلو با شربت", category: "canned", state: "cooked", calories: 80, protein: 0.5, carbs: 20.0, fat: 0.1 },
-
-      { id: "pas_raw_spaghetti", name: "اسپاگتی و ماکارونی (خام خشک)", category: "pasta_raw", state: "raw", calories: 371, protein: 13.0, carbs: 75.0, fat: 1.5 },
-      { id: "pas_ckd_spaghetti", name: "اسپاگتی و ماکارونی پخته آبکش", category: "pasta_cooked", state: "cooked", calories: 158, protein: 5.8, carbs: 31.0, fat: 0.9 },
-      { id: "pas_raw_penne", name: "پاستا پنه گندم (خام خشک)", category: "pasta_raw", state: "raw", calories: 365, protein: 12.5, carbs: 74.5, fat: 1.4 },
-      { id: "pas_ckd_penne", name: "پاستا پنه پخته شده آبکش", category: "pasta_cooked", state: "cooked", calories: 155, protein: 5.5, carbs: 30.5, fat: 0.8 },
-      { id: "pas_raw_wholegrain", name: "پاستا سبوس‌دار گندم (خام)", category: "pasta_raw", state: "raw", calories: 348, protein: 14.5, carbs: 68.0, fat: 2.5 },
-      { id: "pas_ckd_wholegrain", name: "پاستا سبوس‌دار پخته", category: "pasta_cooked", state: "cooked", calories: 145, protein: 6.5, carbs: 28.5, fat: 1.2 },
-
-      { id: "gr_raw_rice_tarem", name: "برنج سفید طارم / هاشمی (خام)", category: "grains_raw", state: "raw", calories: 365, protein: 7.1, carbs: 80.0, fat: 0.7 },
-      { id: "gr_ckd_rice_kateh", name: "برنج سفید کته (کم‌روغن)", category: "grains_cooked", state: "cooked", calories: 130, protein: 2.7, carbs: 28.2, fat: 0.3 },
-      { id: "gr_raw_oats", name: "جو دوسر پرک اولیور (خام)", category: "grains_raw", state: "raw", calories: 389, protein: 16.9, carbs: 66.3, fat: 6.9 },
-      { id: "gr_raw_potato", name: "سیب‌زمینی خام با پوست", category: "grains_raw", state: "raw", calories: 77, protein: 2.0, carbs: 17.5, fat: 0.1 },
-      { id: "gr_ckd_potato_boiled", name: "سیب‌زمینی آب‌پز ساده", category: "grains_cooked", state: "cooked", calories: 87, protein: 1.9, carbs: 20.1, fat: 0.1 },
-      { id: "br_sangak", name: "نان سنگک سنتی سبوس‌دار", category: "grains_cooked", state: "cooked", calories: 260, protein: 9.0, carbs: 50.0, fat: 2.0 },
-      { id: "br_barbari", name: "نان بربری سنتی", category: "grains_cooked", state: "cooked", calories: 265, protein: 8.8, carbs: 52.0, fat: 2.2 },
-
-      { id: "p_raw_chick_breast", name: "سینه مرغ (خام، بدون پوست)", category: "protein_raw", state: "raw", calories: 120, protein: 22.5, carbs: 0, fat: 2.6 },
-      { id: "p_ckd_chick_breast", name: "سینه مرغ (آب‌پز / گریل رژیمی)", category: "protein_cooked", state: "cooked", calories: 165, protein: 31.0, carbs: 0, fat: 3.6 },
-      { id: "p_raw_beef_fillet", name: "فیله گوساله بدون چربی (خام)", category: "protein_raw", state: "raw", calories: 125, protein: 23.5, carbs: 0, fat: 3.2 },
-      { id: "p_raw_egg_whole", name: "تخم‌مرغ کامل (خام)", category: "protein_raw", state: "raw", calories: 143, protein: 12.6, carbs: 0.7, fat: 9.5 },
-      { id: "p_ckd_egg", name: "تخم‌مرغ آب‌پز سفت", category: "protein_cooked", state: "cooked", calories: 155, protein: 13.0, carbs: 1.1, fat: 11.0 },
-      { id: "p_raw_egg_white", name: "سفیده تخم‌مرغ (خام)", category: "protein_raw", state: "raw", calories: 52, protein: 11.0, carbs: 0.7, fat: 0.2 },
-
-      { id: "fr_apple", name: "سیب درختی با پوست", category: "fruits", state: "raw", calories: 52, protein: 0.3, carbs: 13.8, fat: 0.2 },
-      { id: "fr_banana", name: "موز تازه رسیده", category: "fruits", state: "raw", calories: 89, protein: 1.1, carbs: 22.8, fat: 0.3 },
-      { id: "vg_cucumber", name: "خیار بوته‌ای با پوست", category: "vegetables", state: "raw", calories: 15, protein: 0.7, carbs: 3.6, fat: 0.1 },
-      { id: "vg_tomato", name: "گوجه‌فرنگی تازه", category: "vegetables", state: "raw", calories: 18, protein: 0.9, carbs: 3.9, fat: 0.2 },
-      { id: "nt_walnut", name: "گردو مغز سفید ایرانی", category: "nuts", state: "raw", calories: 654, protein: 15.2, carbs: 13.7, fat: 65.2 },
-      { id: "ft_oliveoil", name: "روغن زیتون فرابکر", category: "fats", state: "raw", calories: 884, protein: 0, carbs: 0, fat: 100.0 },
-      { id: "dy_yogurt_greek", name: "ماست یونانی پرپروتئین", category: "dairy", state: "cooked", calories: 73, protein: 10.0, carbs: 3.8, fat: 1.9 },
-
-      { id: "ir_ghormeh", name: "خورشت قورمه‌سبزی سنتی", category: "iranian", state: "cooked", calories: 155, protein: 8.5, carbs: 6.5, fat: 11.0 },
-      { id: "ir_koobideh", name: "کباب کوبیده سنتی گوسفندی", category: "iranian", state: "cooked", calories: 270, protein: 18.0, carbs: 2.0, fat: 22.0 },
-      { id: "sup_whey_isolate", name: "پروتئین وی ایزوله ۱۰۰٪", category: "protein_raw", state: "raw", calories: 375, protein: 88.0, carbs: 3.0, fat: 1.0 }
-      {"id": "food_1", "name": "برنج سفید کته (کم‌روغن)", "category": "grains_cooked", "state": "cooked", "calories": 130, "protein": 2.7, "carbs": 28.2, "fat": 0.3},
-  {"id": "food_2", "name": "برنج سفید آبکش با روغن مجلسی", "category": "grains_cooked", "state": "cooked", "calories": 165, "protein": 2.6, "carbs": 28.0, "fat": 4.8},
-  {"id": "food_3", "name": "برنج قهوه‌ای پخته", "category": "grains_cooked", "state": "cooked", "calories": 123, "protein": 2.7, "carbs": 25.6, "fat": 1.0},
-  {"id": "food_4", "name": "برنج سفید ایرانی (خام)", "category": "grains_raw", "state": "raw", "calories": 365, "protein": 7.1, "carbs": 80.0, "fat": 0.7},
-  {"id": "food_5", "name": "برنج قهوه‌ای (خام)", "category": "grains_raw", "state": "raw", "calories": 362, "protein": 7.5, "carbs": 76.0, "fat": 2.7},
-  {"id": "food_6", "name": "نان سنگک سنتی سبوس‌دار", "category": "grains_cooked", "state": "cooked", "calories": 260, "protein": 9.0, "carbs": 50.0, "fat": 2.0},
-  {"id": "food_7", "name": "نان بربری سنتی", "category": "grains_cooked", "state": "cooked", "calories": 265, "protein": 8.8, "carbs": 52.0, "fat": 2.2},
-  {"id": "food_8", "name": "نان تافتون سنتی", "category": "grains_cooked", "state": "cooked", "calories": 270, "protein": 8.5, "carbs": 54.0, "fat": 2.0},
-  {"id": "food_9", "name": "نان لواش ماشینی نازک", "category": "grains_cooked", "state": "cooked", "calories": 275, "protein": 8.0, "carbs": 56.0, "fat": 1.8},
-  {"id": "food_10", "name": "نان تست سفید", "category": "grains_cooked", "state": "cooked", "calories": 265, "protein": 8.9, "carbs": 49.0, "fat": 3.2},
-  {"id": "food_11", "name": "نان تست جو و سبوس‌دار", "category": "grains_cooked", "state": "cooked", "calories": 247, "protein": 12.0, "carbs": 42.0, "fat": 3.5},
-  {"id": "food_12", "name": "نان باگت فرانسوی", "category": "grains_cooked", "state": "cooked", "calories": 272, "protein": 9.2, "carbs": 53.0, "fat": 1.9},
-  {"id": "food_13", "name": "نان پیتا مدیترانه‌ای", "category": "grains_cooked", "state": "cooked", "calories": 275, "protein": 9.1, "carbs": 55.7, "fat": 1.2},
-  {"id": "food_14", "name": "نان جو خالص دیابتی", "category": "grains_cooked", "state": "cooked", "calories": 235, "protein": 10.5, "carbs": 45.0, "fat": 2.1},
-  {"id": "food_15", "name": "جو دوسر پرک اولیور (خام)", "category": "grains_raw", "state": "raw", "calories": 389, "protein": 16.9, "carbs": 66.3, "fat": 6.9},
-  {"id": "food_16", "name": "اوتمیل پخته‌شده با آب", "category": "grains_cooked", "state": "cooked", "calories": 71, "protein": 2.5, "carbs": 12.0, "fat": 1.5},
-  {"id": "food_17", "name": "دانه کینوا سفید (خام)", "category": "grains_raw", "state": "raw", "calories": 368, "protein": 14.1, "carbs": 64.2, "fat": 6.1},
-  {"id": "food_18", "name": "کینوا پخته‌شده", "category": "grains_cooked", "state": "cooked", "calories": 120, "protein": 4.4, "carbs": 21.3, "fat": 1.9},
-  {"id": "food_19", "name": "سیب‌زمینی خام با پوست", "category": "grains_raw", "state": "raw", "calories": 77, "protein": 2.0, "carbs": 17.5, "fat": 0.1},
-  {"id": "food_20", "name": "سیب‌زمینی آب‌پز ساده", "category": "grains_cooked", "state": "cooked", "calories": 87, "protein": 1.9, "carbs": 20.1, "fat": 0.1},
-  {"id": "food_21", "name": "سیب‌زمینی تنوری / فرپز", "category": "grains_cooked", "state": "cooked", "calories": 93, "protein": 2.5, "carbs": 21.2, "fat": 0.1},
-  {"id": "food_22", "name": "سیب‌زمینی سرخ‌کرده خانگی", "category": "grains_cooked", "state": "cooked", "calories": 285, "protein": 3.4, "carbs": 37.0, "fat": 14.0},
-  {"id": "food_23", "name": "سیب‌زمینی شیرین (خام)", "category": "grains_raw", "state": "raw", "calories": 86, "protein": 1.6, "carbs": 20.1, "fat": 0.1},
-  {"id": "food_24", "name": "سیب‌زمینی شیرین پخته", "category": "grains_cooked", "state": "cooked", "calories": 90, "protein": 2.0, "carbs": 20.7, "fat": 0.2},
-  {"id": "food_25", "name": "اسپاگتی و ماکارونی (خام خشک)", "category": "pasta_raw", "state": "raw", "calories": 371, "protein": 13.0, "carbs": 75.0, "fat": 1.5},
-  {"id": "food_26", "name": "اسپاگتی پخته آبکش ساده", "category": "pasta_cooked", "state": "cooked", "calories": 158, "protein": 5.8, "carbs": 31.0, "fat": 0.9},
-  {"id": "food_27", "name": "پاستا پنه (خام خشک)", "category": "pasta_raw", "state": "raw", "calories": 365, "protein": 12.5, "carbs": 74.5, "fat": 1.4},
-  {"id": "food_28", "name": "پاستا پنه پخته‌شده", "category": "pasta_cooked", "state": "cooked", "calories": 155, "protein": 5.5, "carbs": 30.5, "fat": 0.8},
-  {"id": "food_29", "name": "پاستا فرمی فوسیلی (خام)", "category": "pasta_raw", "state": "raw", "calories": 368, "protein": 12.8, "carbs": 74.8, "fat": 1.5},
-  {"id": "food_30", "name": "پاستا سبوس‌دار قهوه‌ای (خام)", "category": "pasta_raw", "state": "raw", "calories": 348, "protein": 14.5, "carbs": 68.0, "fat": 2.5},
-  {"id": "food_31", "name": "پاستا سبوس‌دار پخته", "category": "pasta_cooked", "state": "cooked", "calories": 145, "protein": 6.5, "carbs": 28.5, "fat": 1.2},
-  {"id": "food_32", "name": "ورق لازانیا خشک (خام)", "category": "pasta_raw", "state": "raw", "calories": 360, "protein": 12.0, "carbs": 74.0, "fat": 1.6},
-  {"id": "food_33", "name": "ورق لازانیا آب‌پز", "category": "pasta_cooked", "state": "cooked", "calories": 140, "protein": 5.0, "carbs": 27.5, "fat": 0.9},
-  {"id": "food_34", "name": "نودل فوری قالبی (خام)", "category": "pasta_raw", "state": "raw", "calories": 440, "protein": 9.5, "carbs": 62.0, "fat": 17.5},
-  {"id": "food_35", "name": "نودل فوری پخته با آب", "category": "pasta_cooked", "state": "cooked", "calories": 142, "protein": 3.2, "carbs": 21.0, "fat": 5.2},
-  {"id": "food_36", "name": "نودل برنجی آسیایی (خام)", "category": "pasta_raw", "state": "raw", "calories": 364, "protein": 3.4, "carbs": 83.0, "fat": 0.6},
-  {"id": "food_37", "name": "رشته سوپ ورمیشل (خام)", "category": "pasta_raw", "state": "raw", "calories": 370, "protein": 12.0, "carbs": 76.0, "fat": 1.2},
-  {"id": "food_38", "name": "رشته آش سنتی", "category": "pasta_raw", "state": "raw", "calories": 355, "protein": 11.5, "carbs": 73.0, "fat": 1.8},
-  {"id": "food_39", "name": "بلغور گندم (خام)", "category": "grains_raw", "state": "raw", "calories": 342, "protein": 12.3, "carbs": 75.8, "fat": 1.3},
-  {"id": "food_40", "name": "بلغور جو (خام)", "category": "grains_raw", "state": "raw", "calories": 354, "protein": 12.5, "carbs": 73.5, "fat": 2.3},
-  {"id": "food_41", "name": "آرد گندم سفید نانوایی", "category": "grains_raw", "state": "raw", "calories": 364, "protein": 10.3, "carbs": 76.3, "fat": 1.0},
-  {"id": "food_42", "name": "آرد برنج مرغوب", "category": "grains_raw", "state": "raw", "calories": 366, "protein": 6.0, "carbs": 80.0, "fat": 1.4},
-  {"id": "food_43", "name": "آرد نخودچی خالص", "category": "grains_raw", "state": "raw", "calories": 387, "protein": 22.4, "carbs": 57.8, "fat": 6.7},
-  {"id": "food_44", "name": "پودر جوانه گندم خالص", "category": "grains_raw", "state": "raw", "calories": 385, "protein": 23.2, "carbs": 51.8, "fat": 9.7},
-  {"id": "food_45", "name": "سبوس برنج پودرشده", "category": "grains_raw", "state": "raw", "calories": 316, "protein": 13.4, "carbs": 49.7, "fat": 20.9},
-  {"id": "food_46", "name": "کورن فلکس غلات صبحانه ساده", "category": "grains_cooked", "state": "cooked", "calories": 378, "protein": 7.0, "carbs": 84.0, "fat": 0.9},
-  {"id": "food_47", "name": "عدس قهوه‌ای / سبز (خام)", "category": "legumes_raw", "state": "raw", "calories": 353, "protein": 25.8, "carbs": 60.1, "fat": 1.1},
-  {"id": "food_48", "name": "عدس آب‌پز پخته‌شده", "category": "legumes_cooked", "state": "cooked", "calories": 116, "protein": 9.0, "carbs": 20.1, "fat": 0.4},
-  {"id": "food_49", "name": "دال عدس قرمز (خام)", "category": "legumes_raw", "state": "raw", "calories": 345, "protein": 24.5, "carbs": 59.5, "fat": 1.0},
-  {"id": "food_50", "name": "دال عدس پخته‌شده", "category": "legumes_cooked", "state": "cooked", "calories": 112, "protein": 8.5, "carbs": 19.5, "fat": 0.4},
-  {"id": "food_51", "name": "نخود آبگوشتی درشت (خام)", "category": "legumes_raw", "state": "raw", "calories": 364, "protein": 19.3, "carbs": 60.6, "fat": 6.0},
-  {"id": "food_52", "name": "نخود آب‌پز پخته‌شده", "category": "legumes_cooked", "state": "cooked", "calories": 164, "protein": 8.9, "carbs": 27.4, "fat": 2.6},
-  {"id": "food_53", "name": "لپه زرد (خام)", "category": "legumes_raw", "state": "raw", "calories": 341, "protein": 24.5, "carbs": 60.0, "fat": 1.2},
-  {"id": "food_54", "name": "لپه پخته‌شده", "category": "legumes_cooked", "state": "cooked", "calories": 118, "protein": 8.3, "carbs": 21.0, "fat": 0.5},
-  {"id": "food_55", "name": "لوبیا چیتی (خام)", "category": "legumes_raw", "state": "raw", "calories": 347, "protein": 21.4, "carbs": 62.5, "fat": 1.2},
-  {"id": "food_56", "name": "لوبیا چیتی آب‌پز ساده", "category": "legumes_cooked", "state": "cooked", "calories": 139, "protein": 9.7, "carbs": 25.1, "fat": 0.5},
-  {"id": "food_57", "name": "لوبیا قرمز کپسولی (خام)", "category": "legumes_raw", "state": "raw", "calories": 333, "protein": 23.6, "carbs": 60.0, "fat": 0.8},
-  {"id": "food_58", "name": "لوبیا قرمز پخته‌شده", "category": "legumes_cooked", "state": "cooked", "calories": 127, "protein": 8.7, "carbs": 22.8, "fat": 0.5},
-  {"id": "food_59", "name": "لوبیا سفید آبگوشتی (خام)", "category": "legumes_raw", "state": "raw", "calories": 335, "protein": 23.0, "carbs": 61.0, "fat": 0.9},
-  {"id": "food_60", "name": "لوبیا سفید پخته‌شده", "category": "legumes_cooked", "state": "cooked", "calories": 139, "protein": 9.7, "carbs": 25.0, "fat": 0.4},
-  {"id": "food_61", "name": "لوبیا چشم‌بلبلی (خام)", "category": "legumes_raw", "state": "raw", "calories": 336, "protein": 23.5, "carbs": 60.0, "fat": 1.3},
-  {"id": "food_62", "name": "لوبیا چشم‌بلبلی پخته", "category": "legumes_cooked", "state": "cooked", "calories": 116, "protein": 7.7, "carbs": 21.0, "fat": 0.5},
-  {"id": "food_63", "name": "لوبیا سیاه (خام)", "category": "legumes_raw", "state": "raw", "calories": 341, "protein": 21.6, "carbs": 62.4, "fat": 1.4},
-  {"id": "food_64", "name": "لوبیا سیاه پخته‌شده", "category": "legumes_cooked", "state": "cooked", "calories": 132, "protein": 8.9, "carbs": 23.7, "fat": 0.5},
-  {"id": "food_65", "name": "ماش سبز (خام)", "category": "legumes_raw", "state": "raw", "calories": 347, "protein": 23.8, "carbs": 62.6, "fat": 1.1},
-  {"id": "food_66", "name": "ماش پخته‌شده", "category": "legumes_cooked", "state": "cooked", "calories": 105, "protein": 7.0, "carbs": 19.1, "fat": 0.4},
-  {"id": "food_67", "name": "باقلا خشک زرد (خام)", "category": "legumes_raw", "state": "raw", "calories": 341, "protein": 26.1, "carbs": 58.3, "fat": 1.5},
-  {"id": "food_68", "name": "باقلا سبز پوست‌کنده (خام)", "category": "legumes_raw", "state": "raw", "calories": 88, "protein": 7.9, "carbs": 15.0, "fat": 0.7},
-  {"id": "food_69", "name": "باقلا سبز پخته با نمک", "category": "legumes_cooked", "state": "cooked", "calories": 110, "protein": 7.6, "carbs": 19.5, "fat": 0.5},
-  {"id": "food_70", "name": "دانه سویا روغنی (خام)", "category": "legumes_raw", "state": "raw", "calories": 446, "protein": 36.5, "carbs": 30.2, "fat": 19.9},
-  {"id": "food_71", "name": "دانه سویا آب‌پز", "category": "legumes_cooked", "state": "cooked", "calories": 173, "protein": 16.6, "carbs": 9.9, "fat": 9.0},
-  {"id": "food_72", "name": "سویا بافت‌دار ماکارونی (خشک)", "category": "legumes_raw", "state": "raw", "calories": 335, "protein": 51.5, "carbs": 31.0, "fat": 1.2},
-  {"id": "food_73", "name": "کنسرو تن ماهی در آب‌نمک رژیمی", "category": "canned", "state": "cooked", "calories": 116, "protein": 25.5, "carbs": 0, "fat": 0.8},
-  {"id": "food_74", "name": "کنسرو تن ماهی در روغن مایع", "category": "canned", "state": "cooked", "calories": 198, "protein": 29.0, "carbs": 0, "fat": 8.2},
-  {"id": "food_75", "name": "کنسرو تن ماهی فلفلی", "category": "canned", "state": "cooked", "calories": 205, "protein": 28.0, "carbs": 1.0, "fat": 9.5},
-  {"id": "food_76", "name": "کنسرو تن ماهی شویدی", "category": "canned", "state": "cooked", "calories": 195, "protein": 28.5, "carbs": 0.5, "fat": 8.0},
-  {"id": "food_77", "name": "کنسرو ساردین در روغن", "category": "canned", "state": "cooked", "calories": 208, "protein": 24.6, "carbs": 0, "fat": 11.5},
-  {"id": "food_78", "name": "کنسرو ساردین در سس گوجه", "category": "canned", "state": "cooked", "calories": 185, "protein": 21.0, "carbs": 2.5, "fat": 10.0},
-  {"id": "food_79", "name": "کنسرو ماهی کیلکا در روغن", "category": "canned", "state": "cooked", "calories": 190, "protein": 22.0, "carbs": 0, "fat": 11.0},
-  {"id": "food_80", "name": "کنسرو ماهی سالمون در آب‌نمک", "category": "canned", "state": "cooked", "calories": 142, "protein": 20.0, "carbs": 0, "fat": 6.5},
-  {"id": "food_81", "name": "کنسرو خوراک لوبیا چیتی ساده", "category": "canned", "state": "cooked", "calories": 110, "protein": 6.8, "carbs": 19.5, "fat": 0.8},
-  {"id": "food_82", "name": "کنسرو خوراک لوبیا چیتی با قارچ", "category": "canned", "state": "cooked", "calories": 115, "protein": 7.0, "carbs": 20.0, "fat": 1.0},
-  {"id": "food_83", "name": "کنسرو نخود آب‌پز ساده", "category": "canned", "state": "cooked", "calories": 128, "protein": 7.2, "carbs": 20.8, "fat": 2.0},
-  {"id": "food_84", "name": "کنسرو خوراک عدسی آماده", "category": "canned", "state": "cooked", "calories": 105, "protein": 7.5, "carbs": 17.5, "fat": 0.9},
-  {"id": "food_85", "name": "کنسرو ذرت شیرین طلایی", "category": "canned", "state": "cooked", "calories": 86, "protein": 3.2, "carbs": 19.0, "fat": 1.2},
-  {"id": "food_86", "name": "کنسرو نخود فرنگی لطیف", "category": "canned", "state": "cooked", "calories": 70, "protein": 4.8, "carbs": 12.5, "fat": 0.4},
-  {"id": "food_87", "name": "کنسرو مخلوط سبزیجات (ذرت، نخود، هویج)", "category": "canned", "state": "cooked", "calories": 65, "protein": 3.0, "carbs": 13.0, "fat": 0.5},
-  {"id": "food_88", "name": "کنسرو قارچ اسلایس در آب‌نمک", "category": "canned", "state": "cooked", "calories": 24, "protein": 2.8, "carbs": 3.5, "fat": 0.3},
-  {"id": "food_89", "name": "کنسرو زیتون سبز بدون هسته", "category": "canned", "state": "cooked", "calories": 145, "protein": 1.0, "carbs": 3.8, "fat": 15.3},
-  {"id": "food_90", "name": "کنسرو زیتون سیاه در آب‌نمک", "category": "canned", "state": "cooked", "calories": 165, "protein": 1.2, "carbs": 4.5, "fat": 16.5},
-  {"id": "food_91", "name": "کنسرو لوبیا سبز خردشده", "category": "canned", "state": "cooked", "calories": 25, "protein": 1.4, "carbs": 4.5, "fat": 0.2},
-  {"id": "food_92", "name": "کنسرو خوراک بادمجان", "category": "canned", "state": "cooked", "calories": 95, "protein": 1.8, "carbs": 9.0, "fat": 6.0},
-  {"id": "food_93", "name": "کنسرو کشک بادمجان آماده", "category": "canned", "state": "cooked", "calories": 140, "protein": 4.2, "carbs": 8.5, "fat": 10.0},
-  {"id": "food_94", "name": "کنسرو خورشت قورمه‌سبزی", "category": "canned", "state": "cooked", "calories": 160, "protein": 9.0, "carbs": 7.0, "fat": 11.0},
-  {"id": "food_95", "name": "کنسرو خورشت قیمه سیب‌زمینی", "category": "canned", "state": "cooked", "calories": 168, "protein": 8.5, "carbs": 13.5, "fat": 9.0},
-  {"id": "food_96", "name": "کنسرو خورشت فسنجان", "category": "canned", "state": "cooked", "calories": 245, "protein": 7.5, "carbs": 16.0, "fat": 17.5},
-  {"id": "food_97", "name": "کنسرو مایه ماکارونی با گوشت", "category": "canned", "state": "cooked", "calories": 145, "protein": 9.5, "carbs": 8.0, "fat": 8.5},
-  {"id": "food_98", "name": "رب گوجه‌فرنگی غلیظ", "category": "canned", "state": "cooked", "calories": 82, "protein": 4.3, "carbs": 18.0, "fat": 0.5},
-  {"id": "food_99", "name": "کمپوت آناناس با شربت رقیق", "category": "canned", "state": "cooked", "calories": 75, "protein": 0.4, "carbs": 19.5, "fat": 0.1},
-  {"id": "food_100", "name": "کمپوت هلو با شربت", "category": "canned", "state": "cooked", "calories": 80, "protein": 0.5, "carbs": 20.0, "fat": 0.1},
-  {"id": "food_101", "name": "سینه مرغ (خام بی‌پوست و چربی)", "category": "protein_raw", "state": "raw", "calories": 120, "protein: 22.5, "carbs": 0, "fat": 2.6},
-  {"id": "food_102", "name": "سینه مرغ (آب‌پز / گریل رژیمی)", "category": "protein_cooked", "state": "cooked", "calories": 165, "protein": 31.0, "carbs": 0, "fat": 3.6},
-  {"id": "food_103", "name": "فیله مرغ ممتاز (خام)", "category": "protein_raw", "state": "raw", "calories": 110, "protein": 23.0, "carbs": 0, "fat": 1.8},
-  {"id": "food_104", "name": "فیله مرغ گریل‌شده", "category": "protein_cooked", "state": "cooked", "calories": 155, "protein": 31.5, "carbs": 0, "fat": 2.5},
-  {"id": "food_105", "name": "ران مرغ (خام بی‌پوست)", "category": "protein_raw", "state": "raw", "calories": 145, "protein": 19.5, "carbs": 0, "fat": 7.2},
-  {"id": "food_106", "name": "ران مرغ (پخته بی‌پوست)", "category": "protein_cooked", "state": "cooked", "calories": 190, "protein": 24.5, "carbs": 0, "fat": 9.5},
-  {"id": "food_107", "name": "بال مرغ با پوست (پخته)", "category": "protein_cooked", "state": "cooked", "calories": 290, "protein": 27.0, "carbs": 0, "fat": 19.5},
-  {"id": "food_108", "name": "سنگدان مرغ (پخته)", "category": "protein_cooked", "state": "cooked", "calories": 145, "protein": 27.0, "carbs": 0, "fat": 3.5},
-  {"id": "food_109", "name": "جگر مرغ (خام)", "category": "protein_raw", "state": "raw", "calories": 119, "protein": 16.9, "carbs": 0.7, "fat": 4.8},
-  {"id": "food_110", "name": "سینه بوقلمون (خام بی‌پوست)", "category": "protein_raw", "state": "raw", "calories": 111, "protein": 24.6, "carbs": 0, "fat": 0.7},
-  {"id": "food_111", "name": "سینه بوقلمون پخته گریل", "category": "protein_cooked", "state": "cooked", "calories": 147, "protein": 30.1, "carbs": 0, "fat": 2.1},
-  {"id": "food_112", "name": "ران بوقلمون بدون پوست (پخته)", "category": "protein_cooked", "state": "cooked", "calories": 170, "protein": 28.5, "carbs": 0, "fat": 5.5},
-  {"id": "food_113", "name": "راسته گوساله ممتاز (خام)", "category": "protein_raw", "state": "raw", "calories": 135, "protein": 22.0, "carbs": 0, "fat": 4.8},
-  {"id": "food_114", "name": "راسته گوساله استیک گریل", "category": "protein_cooked", "state": "cooked", "calories": 205, "protein": 29.5, "carbs": 0, "fat": 8.5},
-  {"id": "food_115", "name": "فیله گوساله بدون چربی (خام)", "category": "protein_raw", "state": "raw", "calories": 125, "protein": 23.5, "carbs": 0, "fat": 3.2},
-  {"id": "food_116", "name": "فیله گوساله پخته آب‌پز", "category": "protein_cooked", "state": "cooked", "calories": 195, "protein": 32.0, "carbs": 0, "fat": 6.5},
-  {"id": "food_117", "name": "ران گوسفندی بی‌استخوان (خام)", "category": "protein_raw", "state": "raw", "calories": 215, "protein": 18.0, "carbs": 0, "fat": 16.0},
-  {"id": "food_118", "name": "ران گوسفندی چلوگوشتی پخته", "category": "protein_cooked", "state": "cooked", "calories": 260, "protein": 25.5, "carbs": 0, "fat": 17.0},
-  {"id": "food_119", "name": "سردست گوسفندی (پخته)", "category": "protein_cooked", "state": "cooked", "calories": 280, "protein": 24.0, "carbs": 0, "fat": 20.0},
-  {"id": "food_120", "name": "گوشت چرخ‌کرده مخلوط (خام)", "category": "protein_raw", "state": "raw", "calories": 255, "protein": 17.0, "carbs": 0, "fat": 21.0},
-  {"id": "food_121", "name": "گوشت چرخ‌کرده تفت‌داده بدون روغن", "category": "protein_cooked", "state": "cooked", "calories": 260, "protein": 24.0, "carbs": 0, "fat": 18.0},
-  {"id": "food_122", "name": "گوشت شتر بدون چربی (خام)", "category": "protein_raw", "state": "raw", "calories": 114, "protein": 22.5, "carbs": 0, "fat": 2.0},
-  {"id": "food_123", "name": "گوشت بلدرچین (خام با پوست)", "category": "protein_raw", "state": "raw", "calories": 134, "protein": 21.8, "carbs": 0, "fat": 4.5},
-  {"id": "food_124", "name": "فیله ماهی قزل‌آلا (خام)", "category": "protein_raw", "state": "raw", "calories": 140, "protein": 20.5, "carbs": 0, "fat": 6.3},
-  {"id": "food_125", "name": "ماهی قزل‌آلا کباب‌شده / فرپز", "category": "protein_cooked", "state": "cooked", "calories": 185, "protein": 26.5, "carbs": 0, "fat": 8.2},
-  {"id": "food_126", "name": "فیله ماهی سالمون نروژی (خام)", "category": "protein_raw", "state": "raw", "calories": 208, "protein": 20.4, "carbs": 0, "fat": 13.4},
-  {"id": "food_127", "name": "ماهی سالمون گریل / فرپز", "category": "protein_cooked", "state": "cooked", "calories": 240, "protein": 25.0, "carbs": 0, "fat": 14.5},
-  {"id": "food_128", "name": "ماهی تیلاپیا فیله (خام)", "category": "protein_raw", "state": "raw", "calories": 96, "protein": 20.1, "carbs": 0, "fat": 1.7},
-  {"id": "food_129", "name": "ماهی شیر خلیج فارس (خام)", "category": "protein_raw", "state": "raw", "calories": 125, "protein": 21.0, "carbs": 0, "fat": 4.0},
-  {"id": "food_130", "name": "ماهی سفید دریای خزر (خام)", "category": "protein_raw", "state": "raw", "calories": 110, "protein": 19.5, "carbs": 0, "fat": 3.0},
-  {"id": "food_131", "name": "میگو دریایی پاک‌شده (خام)", "category": "protein_raw", "state": "raw", "calories": 85, "protein": 20.1, "carbs": 0.2, "fat": 0.5},
-  {"id": "food_132", "name": "میگو بخارپز / آب‌پز", "category": "protein_cooked", "state": "cooked", "calories": 99, "protein": 24.0, "carbs": 0.2, "fat": 0.3},
-  {"id": "food_133", "name": "تخم‌مرغ کامل متوسط (خام)", "category": "protein_raw", "state": "raw", "calories": 143, "protein": 12.6, "carbs": 0.7, "fat": 9.5},
-  {"id": "food_134", "name": "تخم‌مرغ آب‌پز سفت", "category": "protein_cooked", "state": "cooked", "calories": 155, "protein": 13.0, "carbs": 1.1, "fat": 11.0},
-  {"id": "food_135", "name": "نیمرو با روغن معمولی", "category": "protein_cooked", "state": "cooked", "calories": 196, "protein": 13.6, "carbs": 0.8, "fat": 15.0},
-  {"id": "food_136", "name": "سفیده تخم‌مرغ خالص (خام)", "category": "protein_raw", "state": "raw", "calories": 52, "protein": 11.0, "carbs": 0.7, "fat": 0.2},
-  {"id": "food_137", "name": "سفیده تخم‌مرغ آب‌پز سفت", "category": "protein_cooked", "state": "cooked", "calories": 52, "protein": 11.0, "carbs": 0.7, "fat": 0.2},
-  {"id": "food_138", "name": "زرده تخم‌مرغ (خام)", "category": "protein_raw", "state": "raw", "calories": 322, "protein": 15.9, "carbs": 3.6, "fat": 26.5},
-  {"id": "food_139", "name": "تخم بلدرچین کامل", "category": "protein_raw", "state": "raw", "calories": 158, "protein": 13.0, "carbs": 0.4, "fat": 11.1},
-  {"id": "food_140", "name": "سوسیس کوکتل گوشت ۵۵٪", "category": "protein_cooked", "state": "cooked", "calories": 270, "protein": 12.0, "carbs": 4.5, "fat": 22.0},
-  {"id": "food_141", "name": "سوسیس هات‌داگ گوشت ۷۰٪", "category": "protein_cooked", "state": "cooked", "calories": 285, "protein": 13.5, "carbs": 3.5, "fat": 24.0},
-  {"id": "food_142", "name": "کالباس مارتادلا و خشک ۶۰٪", "category": "protein_cooked", "state": "cooked", "calories": 245, "protein": 13.0, "carbs": 3.0, "fat": 20.0},
-  {"id": "food_143", "name": "ژامبون گوشت ۹۰٪ مرغوب", "category": "protein_cooked", "state": "cooked", "calories": 165, "protein": 18.0, "carbs": 2.0, "fat": 9.5},
-  {"id": "food_144", "name": "ژامبون بوقلمون ۹۰٪", "category": "protein_cooked", "state": "cooked", "calories": 135, "protein": 19.5, "carbs": 1.5, "fat": 5.5},
-  {"id": "food_145", "name": "ناگت مرغ آماده سرخ‌شده", "category": "protein_cooked", "state": "cooked", "calories": 296, "protein": 15.0, "carbs": 17.0, "fat": 18.5},
-  {"id": "food_146", "name": "همبرگر آماده گوشت ۶۰٪", "category": "protein_cooked", "state": "cooked", "calories": 265, "protein": 14.5, "carbs": 5.0, "fat": 21.0},
-  {"id": "food_147", "name": "فلافل سرخ‌شده آماده", "category": "protein_cooked", "state": "cooked", "calories": 315, "protein": 13.0, "carbs": 32.0, "fat": 15.5},
-  {"id": "food_148", "name": "کله‌پاچه (مخلوط گوشت و زبان)", "category": "protein_cooked", "state": "cooked", "calories": 210, "protein": 22.0, "carbs": 0, "fat": 13.5},
-  {"id": "food_149", "name": "سیرابی شیردان پخته با پیاز", "category": "protein_cooked", "state": "cooked", "calories": 95, "protein": 14.5, "carbs": 1.5, "fat": 3.5},
-  {"id": "food_150", "name": "خوراک زبان گوساله پخته", "category": "protein_cooked", "state": "cooked", "calories": 225, "protein": 19.0, "carbs": 0, "fat": 16.0},
-  {"id": "food_151", "name": "شیر گاو بدون چربی (۰.۵٪)", "category": "dairy", "state": "cooked", "calories": 35, "protein": 3.4, "carbs": 4.9, "fat": 0.1},
-  {"id": "food_152", "name": "شیر گاو کم‌چرب (۱.۵٪)", "category": "dairy", "state": "cooked", "calories": 46, "protein": 3.3, "carbs": 4.8, "fat": 1.5},
-  {"id": "food_153", "name": "شیر گاو پرچرب (۳٪)", "category": "dairy", "state": "cooked", "calories": 61, "protein": 3.2, "carbs": 4.7, "fat": 3.3},
-  {"id": "food_154", "name": "شیر کاکائو پاکتی کم‌چرب", "category": "dairy", "state": "cooked", "calories": 78, "protein": 3.2, "carbs": 12.5, "fat": 1.5},
-  {"id": "food_155", "name": "شیر بادام بدون شکر رژیمی", "category": "dairy", "state": "raw", "calories": 15, "protein": 0.6, "carbs": 0.3, "fat": 1.2},
-  {"id": "food_156", "name": "شیر سویا ارگانیک ساده", "category": "dairy", "state": "cooked", "calories": 45, "protein": 3.8, "carbs": 2.5, "fat": 2.0},
-  {"id": "food_157", "name": "ماست کم‌چرب سنتی (۱.۵٪)", "category": "dairy", "state": "cooked", "calories": 55, "protein": 4.0, "carbs": 5.5, "fat": 1.5},
-  {"id": "food_158", "name": "ماست پرچرب دبه‌ای (۴٪)", "category": "dairy", "state": "cooked", "calories": 75, "protein": 3.8, "carbs": 5.2, "fat": 4.0},
-  {"id": "food_159", "name": "ماست یونانی پرپروتئین ایسلندی", "category": "dairy", "state": "cooked", "calories": 73, "protein": 10.0, "carbs": 3.8, "fat": 1.9},
-  {"id": "food_160", "name": "ماست موسیر بازاری", "category": "dairy", "state": "cooked", "calories": 70, "protein": 4.2, "carbs": 6.5, "fat": 2.8},
-  {"id": "food_161", "name": "ماست چکیده کیسه‌ای ترش", "category": "dairy", "state": "cooked", "calories": 115, "protein": 7.5, "carbs": 6.0, "fat": 6.5},
-  {"id": "food_162", "name": "دوغ سنتی بدون گاز نعنایی", "category": "dairy", "state": "cooked", "calories": 28, "protein": 1.8, "carbs": 2.5, "fat": 1.0},
-  {"id": "food_163", "name": "دوغ گازدار پرچرب آبعلی", "category": "dairy", "state": "cooked", "calories": 40, "protein": 1.6, "carbs": 2.8, "fat": 2.4},
-  {"id": "food_164", "name": "کشک پاستوریزه شیشه‌ای غلیظ", "category": "dairy", "state": "cooked", "calories": 110, "protein": 9.5, "carbs": 6.5, "fat": 4.8},
-  {"id": "food_165", "name": "کشک خشک محلی سخت", "category": "dairy", "state": "raw", "calories": 360, "protein": 52.0, "carbs": 12.0, "fat": 10.0},
-  {"id": "food_166", "name": "پنیر فتا صبحانه پاستوریزه", "category": "dairy", "state": "cooked", "calories": 264, "protein": 14.2, "carbs": 4.1, "fat": 21.3},
-  {"id": "food_167", "name": "پنیر سفید ایرانی کم‌چرب", "category": "dairy", "state": "cooked", "calories": 185, "protein": 16.0, "carbs": 2.5, "fat": 12.0},
-  {"id": "food_168", "name": "پنیر کوتاژ رژیمی کم‌نمک", "category": "dairy", "state": "cooked", "calories": 98, "protein": 11.1, "carbs": 3.4, "fat": 4.3},
-  {"id": "food_169", "name": "پنیر لیقوان و تبریزی اصیل", "category": "dairy", "state": "cooked", "calories": 290, "protein": 15.5, "carbs": 1.5, "fat": 24.5},
-  {"id": "food_170", "name": "پنیر خامه‌ای صبحانه", "category": "dairy", "state": "cooked", "calories": 342, "protein": 6.0, "carbs": 5.5, "fat": 33.5},
-  {"id": "food_171", "name": "پنیر موزارلا پیتزا رنده‌شده", "category": "dairy", "state": "cooked", "calories": 300, "protein": 22.0, "carbs": 2.2, "fat": 22.5},
-  {"id": "food_172", "name": "پنیر گودا / چدار ورقی تست", "category": "dairy", "state": "cooked", "calories": 403, "protein": 24.9, "carbs": 1.3, "fat": 33.1},
-  {"id": "food_173", "name": "خامه صبحانه پاستوریزه ۳۰٪", "category": "dairy", "state": "cooked", "calories": 295, "protein": 2.5, "carbs": 3.8, "fat": 30.0},
-  {"id": "food_174", "name": "سرشیر سنتی گاومیش", "category": "dairy", "state": "cooked", "calories": 420, "protein": 4.0, "carbs": 3.0, "fat": 44.0},
-  {"id": "food_175", "name": "کره پاستوریزه حیوانی (۸۲٪)", "category": "fats", "state": "cooked", "calories": 717, "protein": 0.9, "carbs": 0.1, "fat": 81.0},
-  {"id": "food_176", "name": "کره گیاهی مارگارین", "category": "fats", "state": "cooked", "calories": 715, "protein": 0.2, "carbs": 0.5, "fat": 80.0},
-  {"id": "food_177", "name": "روغن حیوانی کرمانشاهی اصل", "category": "fats", "state": "cooked", "calories": 898, "protein": 0.2, "carbs": 0, "fat": 99.5},
-  {"id": "food_178", "name": "روغن زیتون فرابکر خالص", "category": "fats", "state": "raw", "calories": 884, "protein": 0, "carbs": 0, "fat": 100.0},
-  {"id": "food_179", "name": "روغن کنجد پرس سرد", "category": "fats", "state": "raw", "calories": 884, "protein": 0, "carbs": 0, "fat": 100.0},
-  {"id": "food_180", "name": "روغن کلزا (کانولا)", "category": "fats", "state": "raw", "calories": 884, "protein": 0, "carbs": 0, "fat": 100.0},
-  {"id": "food_181", "name": "روغن آفتابگردان سرخ‌کردنی", "category": "fats", "state": "cooked", "calories": 884, "protein": 0, "carbs": 0, "fat": 100.0},
-  {"id": "food_182", "name": "روغن نارگیل خوراکی", "category": "fats", "state": "raw", "calories": 862, "protein": 0, "carbs": 0, "fat": 98.0},
-  {"id": "food_183", "name": "روغن دانه کتان خالص", "category": "fats", "state": "raw", "calories": 884, "protein": 0, "carbs": 0, "fat": 100.0},
-  {"id": "food_184", "name": "سس مایونز پرچرب سالاد", "category": "fats", "state": "cooked", "calories": 680, "protein": 1.0, "carbs": 3.0, "fat": 74.0},
-  {"id": "food_185", "name": "سس مایونز کم‌چرب رژیمی", "category": "fats", "state": "cooked", "calories": 260, "protein": 1.2, "carbs": 9.5, "fat": 24.5},
-  {"id": "food_186", "name": "سس کچاپ گوجه‌فرنگی", "category": "fats", "state": "cooked", "calories": 112, "protein": 1.3, "carbs": 26.0, "fat": 0.2},
-  {"id": "food_187", "name": "سس خردل زرد ملایم", "category": "fats", "state": "cooked", "calories": 66, "protein": 4.4, "carbs": 5.0, "fat": 3.3},
-  {"id": "food_188", "name": "سیب درختی با پوست", "category": "fruits", "state": "raw", "calories": 52, "protein": 0.3, "carbs": 13.8, "fat": 0.2},
-  {"id": "food_189", "name": "موز تازه رسیده", "category": "fruits", "state": "raw", "calories": 89, "protein": 1.1, "carbs": 22.8, "fat": 0.3},
-  {"id": "food_190", "name": "پرتقال تامسون آبدار", "category": "fruits", "state": "raw", "calories": 47, "protein": 0.9, "carbs": 11.8, "fat": 0.1},
-  {"id": "food_191", "name": "نارنگی تازه شیرین", "category": "fruits", "state": "raw", "calories": 53, "protein": 0.8, "carbs": 13.3, "fat": 0.3},
-  {"id": "food_192", "name": "گریپ‌فروت سرخ آبدار", "category": "fruits", "state": "raw", "calories": 42, "protein": 0.8, "carbs": 10.6, "fat": 0.1},
-  {"id": "food_193", "name": "لیمو ترش زرد سنگی", "category": "fruits", "state": "raw", "calories": 29, "protein": 1.1, "carbs": 9.3, "fat": 0.3},
-  {"id": "food_194", "name": "لیمو شیرین تازه آبدار", "category": "fruits", "state": "raw", "calories": 43, "protein": 0.8, "carbs": 10.5, "fat": 0.1},
-  {"id": "food_195", "name": "خیار بوته‌ای با پوست", "category": "vegetables", "state": "raw", "calories": 15, "protein": 0.7, "carbs": 3.6, "fat": 0.1},
-  {"id": "food_196", "name": "گوجه‌فرنگی قرمز بوته‌ای", "category": "vegetables", "state": "raw", "calories": 18, "protein": 0.9, "carbs": 3.9, "fat": 0.2},
-  {"id": "food_197", "name": "کاهو رسمی یا پیچ سالادی", "category": "vegetables", "state": "raw", "calories": 15, "protein": 1.4, "carbs": 2.9, "fat": 0.2},
-  {"id": "food_198", "name": "اسفناج تازه برگ‌ریز", "category": "vegetables", "state": "raw", "calories": 23, "protein": 2.9, "carbs": 3.6, "fat": 0.4},
-  {"id": "food_199", "name": "کلم بروکلی تازه", "category": "vegetables", "state": "raw", "calories": 34, "protein": 2.8, "carbs": 6.6, "fat": 0.4},
-  {"id": "food_200", "name": "گل کلم سفید تازه", "category": "vegetables", "state": "raw", "calories": 25, "protein": 1.9, "carbs": 5.0, "fat": 0.3},
-  {"id": "food_201", "name": "هویج نارنجی خام", "category": "vegetables", "state": "raw", "calories": 41, "protein": 0.9, "carbs": 9.6, "fat": 0.2},
-  {"id": "food_202", "name": "پیاز زرد یا قرمز خام", "category": "vegetables", "state": "raw", "calories": 40, "protein": 1.1, "carbs": 9.3, "fat": 0.1},
-  {"id": "food_203", "name": "قارچ دکمه‌ای سفید خام", "category": "vegetables", "state": "raw", "calories": 22, "protein": 3.1, "carbs": 3.3, "fat": 0.3},
-  {"id": "food_204", "name": "فلفل دلمه‌ای سبز یا رنگی", "category": "vegetables", "state": "raw", "calories": 26, "protein": 1.0, "carbs": 6.0, "fat": 0.3},
-  {"id": "food_205", "name": "کدو سبز با پوست", "category": "vegetables", "state": "raw", "calories": 17, "protein": 1.2, "carbs": 3.1, "fat": 0.3},
-  {"id": "food_206", "name": "بادمجان قلمی خام", "category": "vegetables", "state": "raw", "calories": 25, "protein": 1.0, "carbs": 5.9, "fat": 0.2},
-  {"id": "food_207", "name": "کلم برگ سفید یا بنفش", "category": "vegetables", "state": "raw", "calories": 25, "protein": 1.3, "carbs": 5.8, "fat": 0.1},
-  {"id": "food_208", "name": "سیر تازه بوته‌ای خام", "category": "vegetables", "state": "raw", "calories": 149, "protein": 6.4, "carbs": 33.1, "fat": 0.5},
-  {"id": "food_209", "name": "کرفس تازه با ساقه و برگ", "category": "vegetables", "state": "raw", "calories": 16, "protein": 0.7, "carbs": 3.0, "fat": 0.2},
-  {"id": "food_210", "name": "تربچه نقلی قرمز", "category": "vegetables", "state": "raw", "calories": 16, "protein": 0.7, "carbs": 3.4, "fat": 0.1},
-  {"id": "food_211", "name": "جعفری تازه خردشده", "category": "vegetables", "state": "raw", "calories": 36, "protein": 3.0, "carbs": 6.3, "fat": 0.8},
-  {"id": "food_212", "name": "شوید تازه معطر", "category": "vegetables", "state": "raw", "calories": 43, "protein": 3.5, "carbs": 7.0, "fat": 1.1},
-  {"id": "food_213", "name": "ریحان بنفش یا سبز معطر", "category": "vegetables", "state": "raw", "calories": 22, "protein": 3.2, "carbs": 2.7, "fat": 0.6},
-  {"id": "food_214", "name": "ترخون تازه معطر", "category": "vegetables", "state": "raw", "calories": 295, "protein": 22.8, "carbs": 50.2, "fat": 7.2},
-  {"id": "food_215", "name": "نعناع تازه", "category": "vegetables", "state": "raw", "calories": 44, "protein": 3.3, "carbs": 8.4, "fat": 0.7},
-  {"id": "food_216", "name": "پیازچه تازه با ساقه سبز", "category": "vegetables", "state": "raw", "calories": 32, "protein": 1.8, "carbs": 7.3, "fat": 0.2},
-  {"id": "food_217", "name": "شاهی خردلی تازه", "category": "vegetables", "state": "raw", "calories": 32, "protein": 2.6, "carbs": 5.5, "fat": 0.7},
-  {"id": "food_218", "name": "تره تازه محلی", "category": "vegetables", "state": "raw", "calories": 61, "protein": 1.5, "carbs": 14.2, "fat": 0.3},
-  {"id": "food_219", "name": "شنبلیله تازه", "category": "vegetables", "state": "raw", "calories": 49, "protein": 4.4, "carbs": 6.0, "fat": 0.9},
-  {"id": "food_220", "name": "کدو تنبل شیرین پخته", "category": "vegetables", "state": "cooked", "calories": 26, "protein": 1.0, "carbs": 6.5, "fat": 0.1},
-  {"id": "food_221", "name": "چغندر قرمز لبو (پخته)", "category": "vegetables", "state": "cooked", "calories": 44, "protein": 1.7, "carbs": 10.0, "fat": 0.2},
-  {"id": "food_222", "name": "شلغم سفید آب‌پز با نمک", "category": "vegetables", "state": "cooked", "calories": 22, "protein": 0.7, "carbs": 4.8, "fat": 0.1},
-  {"id": "food_223", "name": "بامیه سبز تازه خورشتی", "category": "vegetables", "state": "raw", "calories": 33, "protein": 1.9, "carbs": 7.5, "fat": 0.2},
-  {"id": "food_224", "name": "کنگر کوهی تازه", "category": "vegetables", "state": "raw", "calories": 47, "protein": 3.3, "carbs": 10.5, "fat": 0.2},
-  {"id": "food_225", "name": "ریواس ترش کوهی", "category": "vegetables", "state": "raw", "calories": 21, "protein": 0.9, "carbs": 4.5, "fat": 0.2},
-  {"id": "food_226", "name": "هندوانه شیرین قرمز", "category": "fruits", "state": "raw", "calories": 30, "protein": 0.6, "carbs": 7.6, "fat": 0.2},
-  {"id": "food_227", "name": "خربزه مشهدی شیرین", "category": "fruits", "state": "raw", "calories": 36, "protein": 0.8, "carbs": 8.7, "fat": 0.2},
-  {"id": "food_228", "name": "طالبی معطر آبدار", "category": "fruits", "state": "raw", "calories": 34, "protein": 0.8, "carbs": 8.2, "fat": 0.2},
-  {"id": "food_229", "name": "گرمک شیرین تابستانی", "category": "fruits", "state": "raw", "calories": 33, "protein": 0.8, "carbs": 8.0, "fat": 0.2},
-  {"id": "food_230", "name": "انگور سفید بی‌دانه", "category": "fruits", "state": "raw", "calories": 69, "protein": 0.7, "carbs": 18.1, "fat": 0.2},
-  {"id": "food_231", "name": "انگور سیاه یاقوتی", "category": "fruits", "state": "raw", "calories": 71, "protein": 0.7, "carbs": 18.5, "fat": 0.2},
-  {"id": "food_232", "name": "کیوی ترش و شیرین", "category": "fruits", "state": "raw", "calories": 61, "protein": 1.1, "carbs": 14.7, "fat": 0.5},
-  {"id": "food_233", "name": "توت‌فرنگی گلخانه‌ای تازه", "category": "fruits", "state": "raw", "calories": 33, "protein": 0.7, "carbs": 7.7, "fat": 0.3},
-  {"id": "food_234", "name": "گیلاس سیاه یا صورتی", "category": "fruits", "state": "raw", "calories": 63, "protein": 1.1, "carbs": 16.0, "fat": 0.2},
-  {"id": "food_235", "name": "آلبالو تازه پیوندی ترش", "category": "fruits", "state": "raw", "calories": 50, "protein": 1.0, "carbs": 12.2, "fat": 0.3},
-  {"id": "food_236", "name": "هلو زعفرانی تازه", "category": "fruits", "state": "raw", "calories": 39, "protein": 0.9, "carbs": 9.5, "fat": 0.3},
-  {"id": "food_237", "name": "شلیل تازه شیرین", "category": "fruits", "state": "raw", "calories": 44, "protein": 1.1, "carbs": 10.6, "fat": 0.3},
-  {"id": "food_238", "name": "زردآلو قیسی تازه", "category": "fruits", "state": "raw", "calories": 48, "protein": 1.4, "carbs": 11.1, "fat": 0.4},
-  {"id": "food_239", "name": "گلابی اسپادانا شیرین", "category": "fruits", "state": "raw", "calories": 57, "protein": 0.4, "carbs": 15.2, "fat": 0.1},
-  {"id": "food_240", "name": "انار دانه سرخ شیرین", "category": "fruits", "state": "raw", "calories": 83, "protein": 1.7, "carbs": 18.7, "fat": 1.2},
-  {"id": "food_241", "name": "انجیر سیاه یا زرد تازه", "category": "fruits", "state": "raw", "calories": 74, "protein": 0.8, "carbs": 19.2, "fat": 0.3},
-  {"id": "food_242", "name": "خرمالو رسیده پاییزی", "category": "fruits", "state": "raw", "calories": 70, "protein": 0.6, "carbs": 18.6, "fat": 0.2},
-  {"id": "food_243", "name": "گوجه‌سبز نوبرانه ترش", "category": "fruits", "state": "raw", "calories": 46, "protein": 0.7, "carbs": 11.4, "fat": 0.3},
-  {"id": "food_244", "name": "چغاله بادام تازه با نمک", "category": "fruits", "state": "raw", "calories": 140, "protein": 5.0, "carbs": 8.0, "fat": 10.5},
-  {"id": "food_245", "name": "توت سفید تازه مشهدی", "category": "fruits", "state": "raw", "calories": 43, "protein": 1.4, "carbs": 9.8, "fat": 0.4},
-  {"id": "food_246", "name": "شاتوت تازه ترش و شیرین", "category": "fruits", "state": "raw", "calories": 45, "protein": 1.5, "carbs": 10.0, "fat": 0.4},
-  {"id": "food_247", "name": "آناناس طبیعی تازه خردشده", "category": "fruits", "state": "raw", "calories": 50, "protein": 0.5, "carbs": 13.1, "fat": 0.1},
-  {"id": "food_248", "name": "انبه زرد پاکستانی شیرین", "category": "fruits", "state": "raw", "calories": 60, "protein": 0.8, "carbs": 15.0, "fat": 0.4},
-  {"id": "food_249", "name": "آووکادو تازه هاوس", "category": "fruits", "state": "raw", "calories": 160, "protein": 2.0, "carbs": 8.5, "fat": 14.7},
-  {"id": "food_250", "name": "ازگیل ژاپنی شیرین", "category": "fruits", "state": "raw", "calories": 47, "protein": 0.4, "carbs": 12.1, "fat": 0.2},
-  {"id": "food_251", "name": "گردو مغز سفید ایرانی", "category": "nuts", "state": "raw", "calories": 654, "protein": 15.2, "carbs": 13.7, "fat": 65.2},
-  {"id": "food_252", "name": "بادام درختی خام شیرین", "category": "nuts", "state": "raw", "calories": 579, "protein": 21.2, "carbs": 21.6, "fat": 49.9},
-  {"id": "food_253", "name": "پسته خام رفسنجان", "category": "nuts", "state": "raw", "calories": 560, "protein": 20.2, "carbs": 27.2, "fat": 45.3},
-  {"id": "food_254", "name": "بادام هندی خام مرغوب", "category": "nuts", "state": "raw", "calories": 553, "protein": 18.2, "carbs": 30.2, "fat": 43.8},
-  {"id": "food_255", "name": "فندق خام پوست‌کنده", "category": "nuts", "state": "raw", "calories": 628, "protein": 15.0, "carbs": 16.7, "fat": 60.8},
-  {"id": "food_256", "name": "بادام زمینی تفت‌داده بی‌نمک", "category": "nuts", "state": "raw", "calories": 567, "protein": 25.8, "carbs": 16.1, "fat": 49.2},
-  {"id": "food_257", "name": "کره بادام زمینی ۱۰۰٪ خالص", "category": "nuts", "state": "raw", "calories": 588, "protein": 25.0, "carbs": 20.0, "fat": 50.0},
-  {"id": "food_258", "name": "تخمه آفتابگردان ریز یا دورسفید", "category": "nuts", "state": "raw", "calories": 584, "protein": 20.8, "carbs": 20.0, "fat": 51.5},
-  {"id": "food_259", "name": "تخمه کدو گوشتی مرمری", "category": "nuts", "state": "raw", "calories": 559, "protein": 30.2, "carbs": 10.7, "fat": 49.0},
-  {"id": "food_260", "name": "تخمه هندوانه بو داده با نمک", "category": "nuts", "state": "raw", "calories": 557, "protein": 28.3, "carbs": 15.3, "fat": 47.4},
-  {"id": "food_261", "name": "کنجد سفید پوست‌کنده خام", "category": "nuts", "state": "raw", "calories": 573, "protein": 17.7, "carbs": 23.4, "fat": 49.7},
-  {"id": "food_262", "name": "ارده کنجد ۱۰۰٪ خالص اردکان", "category": "nuts", "state": "raw", "calories": 595, "protein": 17.0, "carbs": 21.0, "fat": 54.0},
-  {"id": "food_263", "name": "دانه چیا اعلا پرک‌نشده", "category": "nuts", "state": "raw", "calories": 486, "protein": 16.5, "carbs": 42.1, "fat": 30.7},
-  {"id": "food_264", "name": "تخم کتان قهوه‌ای آسیاب‌شده", "category": "nuts", "state": "raw", "calories": 534, "protein": 18.3, "carbs": 28.9, "fat": 42.2},
-  {"id": "food_265", "name": "خرما مضافتی بم گوشتی", "category": "nuts", "state": "raw", "calories": 277, "protein": 1.8, "carbs": 75.0, "fat": 0.2},
-  {"id": "food_266", "name": "خرما پیارم مرغوب نیمه‌خشک", "category": "nuts", "state": "raw", "calories": 282, "protein": 2.2, "carbs": 76.5, "fat": 0.3},
-  {"id": "food_267", "name": "خرما زاهدی خشک", "category": "nuts", "state": "raw", "calories": 290, "protein": 2.0, "carbs": 78.0, "fat": 0.2},
-  {"id": "food_268", "name": "کشمش پلویی آفتابی یا تیزابی", "category": "nuts", "state": "raw", "calories": 299, "protein": 3.1, "carbs": 79.2, "fat": 0.5},
-  {"id": "food_269", "name": "مویز دانه درشت سیاه بی‌هسته", "category": "nuts", "state": "raw", "calories": 305, "protein": 3.2, "carbs": 80.0, "fat": 0.5},
-  {"id": "food_270", "name": "توت خشک آفتابی شیرین", "category": "nuts", "state": "raw", "calories": 330, "protein": 4.5, "carbs": 78.0, "fat": 1.2},
-  {"id": "food_271", "name": "انجیر خشک استهبان اعلا", "category": "nuts", "state": "raw", "calories": 250, "protein": 3.3, "carbs": 64.0, "fat": 0.9},
-  {"id": "food_272", "name": "برگه زردآلو آفتابی (قیسی)", "category": "nuts", "state": "raw", "calories": 241, "protein": 3.4, "carbs": 62.6, "fat": 0.5},
-  {"id": "food_273", "name": "آلو بخارا خورشتی خشک", "category": "nuts", "state": "raw", "calories": 240, "protein": 2.2, "carbs": 63.8, "fat": 0.4},
-  {"id": "food_274", "name": "زرشک اناری ترش خشک", "category": "nuts", "state": "raw", "calories": 315, "protein": 3.5, "carbs": 74.0, "fat": 0.8},
-  {"id": "food_275", "name": "خورشت قورمه‌سبزی جاافتاده سنتی", "category": "iranian", "state": "cooked", "calories": 155, "protein": 8.5, "carbs": 6.5, "fat": 11.0},
-  {"id": "food_276", "name": "خورشت قیمه لپه با سیب‌زمینی", "category": "iranian", "state": "cooked", "calories": 168, "protein": 8.5, "carbs": 13.5, "fat": 9.0},
-  {"id": "food_277", "name": "خورشت قیمه بادمجان سنتی", "category": "iranian", "state": "cooked", "calories": 175, "protein": 8.2, "carbs": 12.0, "fat": 10.5},
-  {"id": "food_278", "name": "خورشت فسنجان اصیل با مغز گردو", "category": "iranian", "state": "cooked", "calories": 260, "protein": 8.0, "carbs": 14.0, "fat": 20.0},
-  {"id": "food_279", "name": "خورشت کرفس با گوشت تکه‌ای", "category": "iranian", "state": "cooked", "calories": 140, "protein": 8.5, "carbs": 5.5, "fat": 9.5},
-  {"id": "food_280", "name": "خورشت بامیه با گوشت گوسفندی", "category": "iranian", "state": "cooked", "calories": 150, "protein": 8.8, "carbs": 7.0, "fat": 9.8},
-  {"id": "food_281", "name": "خورشت به آلو با گوشت", "category": "iranian", "state": "cooked", "calories": 165, "protein": 7.5, "carbs": 16.5, "fat": 7.8},
-  {"id": "food_282", "name": "خورشت مرغ مجلسی زعفرانی", "category": "iranian", "state": "cooked", "calories": 185, "protein": 18.5, "carbs": 4.5, "fat": 10.5},
-  {"id": "food_283", "name": "کباب کوبیده سنتی گوسفندی (سیخ ~ ۱۰۰g)", "category": "iranian", "state": "cooked", "calories": 270, "protein": 18.0, "carbs": 2.0, "fat": 22.0},
-  {"id": "food_284", "name": "جوجه‌کباب سینه زعفرانی بدون کره", "category": "iranian", "state": "cooked", "calories": 175, "protein": 28.0, "carbs": 1.5, "fat": 6.5},
-  {"id": "food_285", "name": "جوجه‌کباب ران مرغ با کره", "category": "iranian", "state": "cooked", "calories": 215, "protein": 24.0, "carbs": 1.5, "fat": 12.5},
-  {"id": "food_286", "name": "کباب برگ راسته گوساله ممتاز", "category": "iranian", "state": "cooked", "calories": 200, "protein": 28.5, "carbs": 0.5, "fat": 9.0},
-  {"id": "food_287", "name": "کباب چنجه گوسفندی لذیذ", "category": "iranian", "state": "cooked", "calories": 220, "protein": 26.0, "carbs": 0.5, "fat": 12.5},
-  {"id": "food_288", "name": "کباب شیشلیک شاندیز با استخوان", "category": "iranian", "state": "cooked", "calories": 290, "protein": 22.0, "carbs": 0, "fat": 22.5},
-  {"id": "food_289", "name": "کباب سلطانی مجلسی (مخلوط)", "category": "iranian", "state": "cooked", "calories": 235, "protein": 23.0, "carbs": 1.0, "fat": 15.5},
-  {"id": "food_290", "name": "کباب تابه‌ای خانگی با گوجه", "category": "iranian", "state": "cooked", "calories": 225, "protein": 18.0, "carbs": 4.5, "fat": 15.0},
-  {"id": "food_291", "name": "زرشک‌پلو با مرغ مجلسی کامل", "category": "iranian", "state": "cooked", "calories": 175, "protein": 10.5, "carbs": 22.0, "fat": 5.0},
-  {"id": "food_292", "name": "باقلاپلو با گوشت ماهیچه گوسفندی", "category": "iranian", "state": "cooked", "calories": 215, "protein": 12.5, "carbs": 21.0, "fat": 9.0},
-  {"id": "food_293", "name": "عدس‌پلو با کشمش و گوشت چرخ‌کرده", "category": "iranian", "state": "cooked", "calories": 195, "protein": 8.5, "carbs": 29.0, "fat": 4.8},
-  {"id": "food_294", "name": "لوبیاپلو سنتی با گوشت تکه‌ای", "category": "iranian", "state": "cooked", "calories": 180, "protein": 7.5, "carbs": 25.0, "fat": 5.5},
-  {"id": "food_295", "name": "سبزی‌پلو با ماهی قزل‌آلا سرخ‌شده", "category": "iranian", "state": "cooked", "calories": 190, "protein": 11.5, "carbs": 21.5, "fat": 6.8},
-  {"id": "food_296", "name": "ته‌چین مرغ زعفرانی اصیل", "category": "iranian", "state": "cooked", "calories": 210, "protein": 10.5, "carbs": 28.0, "fat": 6.5},
-  {"id": "food_297", "name": "کتلت گوشت و سیب‌زمینی خانگی", "category": "iranian", "state": "cooked", "calories": 230, "protein": 13.5, "carbs": 14.0, "fat": 14.0},
-  {"id": "food_298", "name": "کوکو سبزی با تخم‌مرغ و گردو", "category": "iranian", "state": "cooked", "calories": 180, "protein": 7.5, "carbs": 8.0, "fat": 13.5},
-  {"id": "food_299", "name": "کوکو سیب‌زمینی برشته", "category": "iranian", "state": "cooked", "calories": 195, "protein": 5.5, "carbs": 20.0, "fat": 10.5},
-  {"id": "food_300", "name": "میرزاقاسمی شمالی با تخم‌مرغ و سیر", "category": "iranian", "state": "cooked", "calories": 120, "protein": 4.8, "carbs": 7.0, "fat": 8.5},
-  {"id": "food_301", "name": "کشک بادمجان خانگی با نعناداغ", "category": "iranian", "state": "cooked", "calories": 148, "protein": 4.5, "carbs": 9.5, "fat": 10.5},
-  {"id": "food_302", "name": "آبگوشت دیزی سنتی (کوبیده گوشت و نخود)", "category": "iranian", "state": "cooked", "calories": 210, "protein": 14.0, "carbs": 18.0, "fat": 9.5},
-  {"id": "food_303", "name": "آش رشته با پیازداغ و کشک", "category": "iranian", "state": "cooked", "calories": 145, "protein": 5.2, "carbs": 22.0, "fat": 4.5},
-  {"id": "food_304", "name": "آش جو سنتی با حبوبات", "category": "iranian", "state": "cooked", "calories": 130, "protein": 5.0, "carbs": 21.0, "fat": 3.0},
-  {"id": "food_305", "name": "آش دوغ اردبیل با کوفته‌ریزه", "category": "iranian", "state": "cooked", "calories": 115, "protein": 4.5, "carbs": 16.0, "fat": 3.8},
-  {"id": "food_306", "name": "حلیم گندم و گوشت گوسفندی بدون شکر", "category": "iranian", "state": "cooked", "calories": 165, "protein": 8.5, "carbs": 24.0, "fat": 4.0},
-  {"id": "food_307", "name": "شله‌زرد نذری سنتی با بادام", "category": "iranian", "state": "cooked", "calories": 175, "protein": 2.0, "carbs": 39.0, "fat": 1.0},
-  {"id": "food_308", "name": "دلمه برگ مو تبریزی با گوشت", "category": "iranian", "state": "cooked", "calories": 160, "protein": 6.0, "carbs": 21.0, "fat": 5.8},
-  {"id": "food_309", "name": "دلمه بادمجان و فلفل پرشده", "category": "iranian", "state": "cooked", "calories": 140, "protein": 5.5, "carbs": 17.5, "fat": 5.5},
-  {"id": "food_310", "name": "کوفته تبریزی اصیل با گردو و تخم‌مرغ", "category": "iranian", "state": "cooked", "calories": 185, "protein": 12.0, "carbs": 15.0, "fat": 8.5},
-  {"id": "food_311", "name": "الویه مرغ با سس مایونز کامل", "category": "iranian", "state": "cooked", "calories": 245, "protein": 8.5, "carbs": 16.0, "fat": 16.5},
-  {"id": "food_312", "name": "سالاد الویه رژیمی با سس ماست", "category": "iranian", "state": "cooked", "calories": 135, "protein": 10.0, "carbs": 15.0, "fat": 3.8},
-  {"id": "food_313", "name": "سالاد شیرازی سنتی با آبغوره", "category": "vegetables", "state": "raw", "calories": 25, "protein": 0.8, "carbs": 4.5, "fat": 0.3},
-  {"id": "food_314", "name": "سالاد فصل کاهو با سس مایونز کم", "category": "vegetables", "state": "raw", "calories": 45, "protein": 1.2, "carbs": 5.5, "fat": 2.2},
-  {"id": "food_315", "name": "بورانی اسفناج تازه با ماست", "category": "dairy", "state": "cooked", "calories": 65, "protein": 4.2, "carbs": 5.0, "fat": 3.0},
-  {"id": "food_316", "name": "ماکارونی دم‌کرده ایرانی با گوشت چرخ‌کرده", "category": "iranian", "state": "cooked", "calories": 195, "protein": 8.5, "carbs": 26.5, "fat": 6.0},
-  {"id": "food_317", "name": "پیتزا مخصوص مخلوط بازاری", "category": "iranian", "state": "cooked", "calories": 270, "protein": 12.5, "carbs": 28.0, "fat": 12.0},
-  {"id": "food_318", "name": "پیتزا پپرونی تند با پنیر فراوان", "category": "iranian", "state": "cooked", "calories": 305, "protein": 13.0, "carbs": 27.5, "fat": 16.0},
-  {"id": "food_319", "name": "ساندویچ هات‌داگ با پنیر و سس", "category": "iranian", "state": "cooked", "calories": 290, "protein": 11.5, "carbs": 25.0, "fat": 15.8},
-  {"id": "food_320", "name": "ساندویچ ژامبون سرد با مخلفات", "category": "iranian", "state": "cooked", "calories": 235, "protein": 12.0, "carbs": 24.0, "fat": 10.0},
-  {"id": "food_321", "name": "ساندویچ فلافل با سس انبه و ترشی", "category": "iranian", "state": "cooked", "calories": 260, "protein": 7.5, "carbs": 38.0, "fat": 8.5},
-  {"id": "food_322", "name": "اسنک ژامبون و پنیر تست‌شده", "category": "iranian", "state": "cooked", "calories": 275, "protein": 11.0, "carbs": 26.0, "fat": 14.0},
-  {"id": "food_323", "name": "پروتئین وی ایزوله ۱۰۰٪ خالص", "category": "protein_raw", "state": "raw", "calories": 375, "protein": 88.0, "carbs": 3.0, "fat": 1.0},
-  {"id": "food_324", "name": "پروتئین وی کنسانتره ورزشی", "category": "protein_raw", "state": "raw", "calories": 405, "protein": 78.0, "carbs": 7.5, "fat": 6.0},
-  {"id": "food_325", "name": "پروتئین کازئین شبانه", "category": "protein_raw", "state": "raw", "calories": 360, "protein": 80.0, "carbs": 4.0, "fat": 1.5},
-  {"id": "food_326", "name": "گینر افزایش وزن ورزشی (کربوپروتئین)", "category": "grains_raw", "state": "raw", "calories": 390, "protein": 25.0, "carbs": 68.0, "fat": 2.0},
-  {"id": "food_327", "name": "کراتین منوهیدرات ۱۰۰٪ خالص", "category": "protein_raw", "state": "raw", "calories": 0, "protein": 0, "carbs": 0, "fat": 0},
-  {"id": "food_328", "name": "پودر سفیده تخم‌مرغ آلبومین ورزشی", "category": "protein_raw", "state": "raw", "calories": 360, "protein": 82.0, "carbs": 4.5, "fat": 0.5},
-  {"id": "food_329", "name": "پروتئین گیاهی سویا و نخودفرنگی", "category": "protein_raw", "state": "raw", "calories": 380, "protein": 80.0, "carbs": 5.0, "fat": 3.0},
-  {"id": "food_330", "name": "چیپس سیب‌زمینی نمکی بازاری", "category": "grains_cooked", "state": "cooked", "calories": 536, "protein": 7.0, "carbs": 53.0, "fat": 34.0},
-  {"id": "food_331", "name": "پفک پنیری ترد بازاری", "category": "grains_cooked", "state": "cooked", "calories": 530, "protein": 6.5, "carbs": 56.0, "fat": 32.0},
-  {"id": "food_332", "name": "پاپ‌کورن ذرت بو داده با روغن", "category": "grains_cooked", "state": "cooked", "calories": 465, "protein": 9.0, "carbs": 58.0, "fat": 22.0},
-  {"id": "food_333", "name": "بیسکویت ساقه طلایی سبوس‌دار", "category": "grains_cooked", "state": "cooked", "calories": 460, "protein": 7.5, "carbs": 68.0, "fat": 18.0},
-  {"id": "food_334", "name": "بیسکویت پتی‌بور ساده وانیلی", "category": "grains_cooked", "state": "cooked", "calories": 430, "protein": 7.0, "carbs": 76.0, "fat": 11.0},
-  {"id": "food_335", "name": "کیک یزدی سنتی زعفرانی", "category": "grains_cooked", "state": "cooked", "calories": 395, "protein": 6.5, "carbs": 58.0, "fat": 16.0},
-  {"id": "food_336", "name": "کلوچه خرمایی سنتی", "category": "grains_cooked", "state": "cooked", "calories": 375, "protein": 5.5, "carbs": 69.0, "fat": 9.0},
-  {"id": "food_337", "name": "کلوچه لاهیجان با مغز گردو", "category": "grains_cooked", "state": "cooked", "calories": 420, "protein": 6.0, "carbs": 65.0, "fat": 15.5},
-  {"id": "food_338", "name": "شکلات تلخ ۷۰٪ خالص", "category": "fats", "state": "cooked", "calories": 598, "protein": 7.8, "carbs": 45.8, "fat": 42.6},
-  {"id": "food_339", "name": "شکلات صبحانه نوتلا فندقی", "category": "fats", "state": "cooked", "calories": 546, "protein": 6.0, "carbs": 57.5, "fat": 31.0},
-  {"id": "food_340", "name": "گز پسته سنتی اصفهان", "category": "nuts", "state": "cooked", "calories": 410, "protein": 6.5, "carbs": 75.0, "fat": 10.0},
-  {"id": "food_341", "name": "سوهان عسلی قم پرکره", "category": "nuts", "state": "cooked", "calories": 510, "protein": 5.0, "carbs": 62.0, "fat": 27.0},
-  {"id": "food_342", "name": "باقلوا یزدی با پودر پسته", "category": "nuts", "state": "cooked", "calories": 470, "protein": 8.0, "carbs": 58.0, "fat": 23.0},
-  {"id": "food_343", "name": "حلوا زعفرانی مجلسی سنتی", "category": "grains_cooked", "state": "cooked", "calories": 420, "protein": 4.5, "carbs": 58.0, "fat": 19.0},
-  {"id": "food_344", "name": "حلوا ارده شکری صبحانه", "category": "nuts", "state": "cooked", "calories": 505, "protein": 12.0, "carbs": 52.0, "fat": 28.0},
-  {"id": "food_345", "name": "شیره انگور اصل غلیظ", "category": "fruits", "state": "cooked", "calories": 290, "protein": 1.0, "carbs": 72.0, "fat": 0.2},
-  {"id": "food_346", "name": "شیره خرما سنتی خالص", "category": "fruits", "state": "cooked", "calories": 285, "protein": 1.2, "carbs": 70.0, "fat": 0.2},
-  {"id": "food_347", "name": "عسل طبیعی سبلان", "category": "fruits", "state": "raw", "calories": 304, "protein": 0.3, "carbs": 82.4, "fat": 0},
-  {"id": "food_348", "name": "مربای آلبالو بازاری", "category": "fruits", "state": "cooked", "calories": 260, "protein": 0.5, "carbs": 65.0, "fat": 0.1},
-  {"id": "food_349", "name": "مربای توت‌فرنگی با شکر", "category": "fruits", "state": "cooked", "calories": 255, "protein": 0.4, "carbs": 64.0, "fat": 0.1},
-  {"id": "food_350", "name": "مربای هویج سنتی", "category": "fruits", "state": "cooked", "calories": 265, "protein": 0.5, "carbs": 66.0, "fat": 0.1},
-  {"id": "food_351", "name": "بستنی سنتی زعفرانی با خامه و پسته", "category": "dairy", "state": "cooked", "calories": 240, "protein": 4.5, "carbs": 28.0, "fat": 12.5},
-  {"id": "food_352", "name": "فالوده شیرازی با شربت و آبلیمو", "category": "grains_cooked", "state": "cooked", "calories": 160, "protein": 0.5, "carbs": 39.5, "fat": 0.1},
-  {"id": "food_353", "name": "چای سیاه دم‌کرده بدون قند", "category": "vegetables", "state": "cooked", "calories": 1, "protein": 0.1, "carbs": 0.2, "fat": 0},
-  {"id": "food_354", "name": "قهوه اسپرسو خالص تلخ", "category": "grains_cooked", "state": "cooked", "calories": 2, "protein": 0.2, "carbs": 0.3, "fat": 0.1},
-  {"id": "food_355", "name": "نوشابه گازدار کولا بطری", "category": "grains_cooked", "state": "cooked", "calories": 42, "protein": 0, "carbs": 10.6, "fat": 0},
-  {"id": "food_356", "name": "نوشابه زیرو بدون قند رژیمی", "category": "grains_cooked", "state": "cooked", "calories": 0, "protein": 0, "carbs": 0, "fat": 0},
-  {"id": "food_357", "name": "ماءالشعیر کلاسیک تلخ", "category": "grains_cooked", "state": "cooked", "calories": 25, "protein": 0.4, "carbs": 5.5, "fat": 0},
-  {"id": "food_358", "name": "آب پرتقال طبیعی بدون شکر", "category": "fruits", "state": "raw", "calories": 45, "protein": 0.7, "carbs": 10.4, "fat": 0.2},
-  {"id": "food_359", "name": "آب سیب طبیعی تازه", "category": "fruits", "state": "raw", "calories": 46, "protein": 0.1, "carbs": 11.3, "fat": 0.1},
-  {"id": "food_360", "name": "آب انار خالص طبیعی", "category": "fruits", "state": "raw", "calories": 54, "protein": 0.5, "carbs": 13.1, "fat": 0.3},
-  {"id": "food_361", "name": "آب هویج تازه بازاری", "category": "vegetables", "state": "raw", "calories": 40, "protein": 0.9, "carbs": 9.3, "fat": 0.2},
-  {"id": "food_362", "name": "شربت زعفران سنتی با گلاب", "category": "grains_cooked", "state": "cooked", "calories": 95, "protein": 0.1, "carbs": 24.5, "fat": 0},
-  {"id": "food_363", "name": "شربت خاکشیر با یخ", "category": "grains_cooked", "state": "cooked", "calories": 65, "protein": 0.5, "carbs": 16.0, "fat": 0.1},
-  {"id": "food_364", "name": "شربت تخم شربتی با لیمو", "category": "grains_cooked", "state": "cooked", "calories": 68, "protein": 0.8, "carbs": 16.5, "fat": 0.2},
-  {"id": "food_365", "name": "آب‌غوره سنتی بدون نمک", "category": "fruits", "state": "raw", "calories": 18, "protein": 0.3, "carbs": 4.2, "fat": 0.1},
-  {"id": "food_366", "name": "آبلیمو ترش طبیعی شیراز", "category": "fruits", "state": "raw", "calories": 25, "protein": 0.4, "carbs": 7.0, "fat": 0.2},
-  {"id": "food_367", "name": "سرکه سیب تخمیری طبیعی", "category": "fruits", "state": "raw", "calories": 21, "protein": 0.1, "carbs": 0.9, "fat": 0},
-  {"id": "food_368", "name": "سیر ترشی هفت‌ساله سنتی", "category": "vegetables", "state": "cooked", "calories": 85, "protein": 3.0, "carbs": 18.0, "fat": 0.2},
-  {"id": "food_369", "name": "خیارشور ویژه ترد شیشه‌ای", "category": "vegetables", "state": "cooked", "calories": 12, "protein": 0.5, "carbs": 2.2, "fat": 0.1},
-  {"id": "food_370", "name": "ترشی مخلوط گل‌کلم و هویج", "category": "vegetables", "state": "cooked", "calories": 22, "protein": 0.8, "carbs": 4.5, "fat": 0.2},
-  {"id": "food_371", "name": "ترشی لیته بادمجان تند", "category": "vegetables", "state": "cooked", "calories": 30, "protein": 1.0, "carbs": 6.0, "fat": 0.3},
-  {"id": "food_372", "name": "زیتون پرورده اصیل شمالی", "category": "vegetables", "state": "raw", "calories": 285, "protein": 4.0, "carbs": 16.0, "fat": 23.5},
-  {"id": "food_373", "name": "سمنو سنتی بدون شکر با جوانه", "category": "grains_cooked", "state": "cooked", "calories": 185, "protein": 4.5, "carbs": 40.0, "fat": 0.8},
-  {"id": "food_374", "name": "رنگینک خرمایی بوشهری با آرد و گردو", "category": "nuts", "state": "cooked", "calories": 420, "protein": 6.0, "carbs": 62.0, "fat": 17.5},
-  {"id": "food_375", "name": "حلوا مسقطی لاری زعفرانی", "category": "grains_cooked", "state": "cooked", "calories": 380, "protein": 2.0, "carbs": 76.0, "fat": 8.0},
-  {"id": "food_376", "name": "شیرینی نخودچی سنتی عید", "category": "grains_cooked", "state": "cooked", "calories": 480, "protein": 9.5, "carbs": 62.0, "fat": 22.0},
-  {"id": "food_377", "name": "شیرینی زبان ورقه‌ای کره‌ای", "category": "grains_cooked", "state": "cooked", "calories": 515, "protein": 6.5, "carbs": 58.0, "fat": 28.5},
-  {"id": "food_378", "name": "شیرینی دانمارکی گل‌محمدی", "category": "grains_cooked", "state": "cooked", "calories": 435, "protein": 7.0, "carbs": 56.0, "fat": 20.5},
-  {"id": "food_379", "name": "پیراشکی کرم‌دار سرخ‌شده", "category": "grains_cooked", "state": "cooked", "calories": 395, "protein": 6.0, "carbs": 54.0, "fat": 17.5},
-  {"id": "food_380", "name": "نان خامه‌ای تازه قنادی", "category": "dairy", "state": "cooked", "calories": 360, "protein": 4.5, "carbs": 32.0, "fat": 24.0},
-  {"id": "food_381", "name": "رول دارچینی (سینابون)", "category": "grains_cooked", "state": "cooked", "calories": 380, "protein": 5.5, "carbs": 56.0, "fat": 15.0},
-  {"id": "food_382", "name": "مافین شکلاتی ساده", "category": "grains_cooked", "state": "cooked", "calories": 375, "protein": 5.0, "carbs": 52.0, "fat": 16.5},
-  {"id": "food_383", "name": "کروسان کره‌ای صبحانه", "category": "grains_cooked", "state": "cooked", "calories": 406, "protein": 8.2, "carbs": 45.8, "fat": 21.0},
-  {"id": "food_384", "name": "کرم کارامل آماده بازاری", "category": "dairy", "state": "cooked", "calories": 140, "protein": 3.5, "carbs": 24.0, "fat": 3.2},
-  {"id": "food_385", "name": "ژله میوه‌ای آماده با پودر ژلاتین", "category": "grains_cooked", "state": "cooked", "calories": 62, "protein": 1.5, "carbs": 14.0, "fat": 0},
-  {"id": "food_386", "name": "پودینگ وانیلی آماده با شیر", "category": "dairy", "state": "cooked", "calories": 125, "protein": 3.2, "carbs": 22.0, "fat": 2.8},
-  {"id": "food_387", "name": "آجیل مشکل‌گشا مخلوط شیرین", "category": "nuts", "state": "raw", "calories": 470, "protein": 12.0, "carbs": 48.0, "fat": 26.0},
-  {"id": "food_388", "name": "آجیل چهارمغز شور اعلا", "category": "nuts", "state": "raw", "calories": 615, "protein": 18.5, "carbs": 20.0, "fat": 53.0},
-  {"id": "food_389", "name": "سوپ جو پرک با مرغ و هویج", "category": "iranian", "state": "cooked", "calories": 65, "protein": 4.5, "carbs": 8.5, "fat": 1.5},
-  {"id": "food_390", "name": "سوپ خامه‌ای شیر و قارچ رستورانی", "category": "dairy", "state": "cooked", "calories": 115, "protein": 3.8, "carbs": 9.5, "fat": 7.0},
-  {"id": "food_391", "name": "سوپ رشته فرنگی با مرغ و گوجه", "category": "iranian", "state": "cooked", "calories": 58, "protein": 3.5, "carbs": 9.0, "fat": 1.0},
-  {"id": "food_392", "name": "خوراک قارچ و لوبیا چیتی تند", "category": "legumes_cooked", "state": "cooked", "calories": 118, "protein": 7.5, "carbs": 20.5, "fat": 1.0},
-  {"id": "food_393", "name": "خوراک کدو سبز و گوجه رژیمی", "category": "vegetables", "state": "cooked", "calories": 42, "protein": 1.8, "carbs": 6.5, "fat": 1.0},
-  {"id": "food_394", "name": "خوراک لوبیا سبز با هویج و مرغ", "category": "vegetables", "state": "cooked", "calories": 75, "protein": 5.5, "carbs": 7.0, "fat": 2.8},
-  {"id": "food_395", "name": "نرگسی اسفناج با تخم‌مرغ و پیازداغ", "category": "vegetables", "state": "cooked", "calories": 135, "protein": 8.0, "carbs": 4.5, "fat": 9.5},
-  {"id": "food_396", "name": "املت گوجه‌فرنگی قهوه‌خانه‌ای", "category": "protein_cooked", "state": "cooked", "calories": 160, "protein": 7.5, "carbs": 5.0, "fat": 12.5},
-  {"id": "food_397", "name": "املت قارچ و اسفناج با روغن زیتون", "category": "protein_cooked", "state": "cooked", "calories": 130, "protein": 9.0, "carbs": 3.5, "fat": 8.8},
-  {"id": "food_398", "name": "شنیسل مرغ سوخاری رستورانی", "category": "protein_cooked", "state": "cooked", "calories": 255, "protein": 22.0, "carbs": 12.0, "fat": 13.5},
-  {"id": "food_399", "name": "فیله سوخاری استریپس مرغ", "category": "protein_cooked", "state": "cooked", "calories": 270, "protein": 21.0, "carbs": 15.0, "fat": 14.0},
-  {"id": "food_400", "name": "سیب‌زمینی سرخ‌کرده فست‌فودی منجمد", "category": "grains_cooked", "state": "cooked", "calories": 312, "protein": 3.4, "carbs": 41.4, "fat": 15.0},
-  {"id": "food_401", "name": "اسنک بادام زمینی روکش‌دار فلفلی", "category": "nuts", "state": "cooked", "calories": 520, "protein": 16.0, "carbs": 42.0, "fat": 32.0},
-  {"id": "food_402", "name": "نان قندی سنتی ساوه", "category": "grains_cooked", "state": "cooked", "calories": 440, "protein": 7.0, "carbs": 74.0, "fat": 13.0},
-  {"id": "food_403", "name": "نان سوخاری گندم شیرین", "category": "grains_cooked", "state": "cooked", "calories": 395, "protein": 9.5, "carbs": 75.0, "fat": 6.5},
-  {"id": "food_404", "name": "حلوا هویج ارومیه با گردو", "category": "grains_cooked", "state": "cooked", "calories": 360, "protein": 3.0, "carbs": 62.0, "fat": 11.5},
-  {"id": "food_405", "name": "باقلاقاتوق گیلانی با سیر و تخم‌مرغ", "category": "iranian", "state": "cooked", "calories": 145, "protein": 8.0, "carbs": 12.5, "fat": 7.0},
-  {"id": "food_406", "name": "اناربیج شمالی با رب انار و گردو", "category": "iranian", "state": "cooked", "calories": 235, "protein": 11.0, "carbs": 12.0, "fat": 16.5},
-  {"id": "food_407", "name": "ترش‌تره گیلانی با سبزیجات محلی", "category": "iranian", "state": "cooked", "calories": 95, "protein": 4.5, "carbs": 6.5, "fat": 5.8},
-  {"id": "food_408", "name": "قلیه‌ماهی جنوبی با تمبر هندی", "category": "iranian", "state": "cooked", "calories": 170, "protein": 17.5, "carbs": 4.0, "fat": 9.5},
-  {"id": "food_409", "name": "قلیه‌میگو جنوبی با سبزیجات تند", "category": "iranian", "state": "cooked", "calories": 155, "protein": 16.0, "carbs": 4.5, "fat": 8.0},
-  {"id": "food_410", "name": "اشکنه پیاز و شنبلیله با تخم‌مرغ", "category": "iranian", "state": "cooked", "calories": 110, "protein": 4.0, "carbs": 8.0, "fat": 7.0},
-  {"id": "food_411", "name": "کله‌جوش سنتی اصفهان با نعناداغ و گردو", "category": "dairy", "state": "cooked", "calories": 175, "protein": 9.5, "carbs": 7.5, "fat": 12.0},
-  {"id": "food_412", "name": "دم‌پختک گوجه سنتی با سیب‌زمینی", "category": "iranian", "state": "cooked", "calories": 155, "protein": 3.5, "carbs": 28.0, "fat": 3.2},
-  {"id": "food_413", "name": "کلم‌پلو شیرازی با کوفته‌ریزه", "category": "iranian", "state": "cooked", "calories": 185, "protein": 8.0, "carbs": 25.0, "fat": 6.0},
-  {"id": "food_414", "name": "هویج‌پلو مجلسی با خلال پسته و مرغ", "category": "iranian", "state": "cooked", "calories": 190, "protein": 9.0, "carbs": 27.5, "fat": 5.2},
-  {"id": "food_415", "name": "آلبالوپلو با مرغ زعفرانی", "category": "iranian", "state": "cooked", "calories": 180, "protein": 8.5, "carbs": 30.0, "fat": 3.5},
-  {"id": "food_416", "name": "مرصع‌پلو اعلا با مغزیجات و خلال", "category": "iranian", "state": "cooked", "calories": 225, "protein": 10.0, "carbs": 31.0, "fat": 7.0},
-  {"id": "food_417", "name": "رشته‌پلو سنتی با خرما و کشمش", "category": "iranian", "state": "cooked", "calories": 195, "protein": 5.5, "carbs": 37.0, "fat": 3.0},
-  {"id": "food_418", "name": "ماش‌پلو دمی با گوشت چرخ‌کرده", "category": "iranian", "state": "cooked", "calories": 185, "protein": 8.0, "carbs": 27.0, "fat": 5.0},
-  {"id": "food_419", "name": "استامبولی پلو با لوبیا سبز و گوشت", "category": "iranian", "state": "cooked", "calories": 175, "protein": 7.5, "carbs": 25.0, "fat": 5.0},
-  {"id": "food_420", "name": "شنبلیله خشک پودرشده", "category": "vegetables", "state": "raw", "calories": 323, "protein": 23.0, "carbs": 58.0, "fat": 6.4},
-  {"id": "food_421", "name": "نعناع خشک معطر پودر", "category": "vegetables", "state": "raw", "calories": 285, "protein": 20.0, "carbs": 52.0, "fat": 6.0},
-  {"id": "food_422", "name": "شوید خشک ساییده‌شده", "category": "vegetables", "state": "raw", "calories": 253, "protein": 20.0, "carbs": 55.8, "fat": 4.4},
-  {"id": "food_423", "name": "جعفری خشک اعلا", "category": "vegetables", "state": "raw", "calories": 292, "protein": 26.6, "carbs": 50.6, "fat": 5.5},
-  {"id": "food_424", "name": "پودر لیمو عمانی سیاه خالص", "category": "fruits", "state": "raw", "calories": 180, "protein": 4.0, "carbs": 40.0, "fat": 1.0},
-  {"id": "food_425", "name": "سماق قهوه‌ای یا قرمز تبریز", "category": "fruits", "state": "raw", "calories": 240, "protein": 5.0, "carbs": 40.0, "fat": 7.5},
-  {"id": "food_426", "name": "پودر دارچین اصل سیلان", "category": "vegetables", "state": "raw", "calories": 247, "protein": 4.0, "carbs": 80.6, "fat": 1.2},
-  {"id": "food_427", "name": "پودر زنجبیل تند خالص", "category": "vegetables", "state": "raw", "calories": 335, "protein": 9.0, "carbs": 71.6, "fat": 4.2},
-  {"id": "food_428", "name": "زردچوبه مرغوب زرین هندی", "category": "vegetables", "state": "raw", "calories": 312, "protein": 7.8, "carbs": 65.0, "fat": 3.2},
-  {"id": "food_429", "name": "فلفل سیاه دانه‌ساب آسیاب‌شده", "category": "vegetables", "state": "raw", "calories": 251, "protein": 10.4, "carbs": 64.0, "fat": 3.3},
-  {"id": "food_430", "name": "فلفل قرمز تند پاپریکا", "category": "vegetables", "state": "raw", "calories": 282, "protein": 14.1, "carbs": 54.0, "fat": 12.9},
-  {"id": "food_431", "name": "زعفران سرگل قائنات ممتاز", "category": "vegetables", "state": "raw", "calories": 310, "protein": 11.4, "carbs": 65.4, "fat": 5.9},
-  {"id": "food_432", "name": "پودر هل سبز معطر", "category": "vegetables", "state": "raw", "calories": 311, "protein": 10.8, "carbs": 68.5, "fat": 6.7},
-  {"id": "food_433", "name": "گلاب دوآتشه کاشان", "category": "vegetables", "state": "cooked", "calories": 2, "protein": 0, "carbs": 0.5, "fat": 0},
-  {"id": "food_434", "name": "عرق نعناع سنتی غلیظ", "category": "vegetables", "state": "cooked", "calories": 2, "protein": 0, "carbs": 0.5, "fat": 0},
-  {"id": "food_435", "name": "عرق کاسنی تصفیه‌کننده", "category": "vegetables", "state": "cooked", "calories": 1, "protein": 0, "carbs": 0.2, "fat": 0},
-  {"id": "food_436", "name": "عرق بهارنارنج شیراز", "category": "vegetables", "state": "cooked", "calories": 2, "protein": 0, "carbs": 0.5, "fat": 0},
-  {"id": "food_437", "name": "عرق بیدمشک سنتی معطر", "category": "vegetables", "state": "cooked", "calories": 2, "protein": 0, "carbs": 0.5, "fat": 0},
-  {"id": "food_438", "name": "سرکه بالزامیک اصل غلیظ", "category": "fruits", "state": "raw", "calories": 88, "protein": 0.5, "carbs": 17.0, "fat": 0},
-  {"id": "food_439", "name": "سویا سس تیره رقیق", "category": "legumes_cooked", "state": "cooked", "calories": 53, "protein": 8.1, "carbs": 4.9, "fat": 0.6},
-  {"id": "food_440", "name": "رب انار ملس غلیظ سنتی", "category": "fruits", "state": "cooked", "calories": 245, "protein": 2.5, "carbs": 58.0, "fat": 0.5},
-  {"id": "food_441", "name": "تمبر هندی بی‌هسته ترش", "category": "fruits", "state": "raw", "calories": 239, "protein": 2.8, "carbs": 62.5, "fat": 0.6},
-  {"id": "food_442", "name": "قره‌قروت ترش حیوانی خالص", "category": "dairy", "state": "cooked", "calories": 280, "protein": 14.0, "carbs": 54.0, "fat": 0.8},
-  {"id": "food_443", "name": "لواشک خانگی مخلوط آلو و انار", "category": "fruits", "state": "raw", "calories": 260, "protein": 2.0, "carbs": 62.0, "fat": 0.5},
-  {"id": "food_444", "name": "آلوچه جنگلی ترش سسی", "category": "fruits", "state": "raw", "calories": 185, "protein": 1.5, "carbs": 44.0, "fat": 0.3},
-  {"id": "food_445", "name": "شکر سفید تصفیه‌شده چغندری", "category": "grains_raw", "state": "raw", "calories": 387, "protein": 0, "carbs": 100.0, "fat": 0},
-  {"id": "food_446", "name": "قند شکسته حبه‌ای سفید", "category": "grains_raw", "state": "raw", "calories": 387, "protein": 0, "carbs": 100.0, "fat": 0},
-  {"id": "food_447", "name": "نبات زعفرانی سنتی شاخه", "category": "grains_raw", "state": "raw", "calories": 390, "protein": 0, "carbs": 100.0, "fat": 0},
-  {"id": "food_448", "name": "پولکی کنجدی اصفهان", "category": "nuts", "state": "cooked", "calories": 440, "protein": 4.0, "carbs": 80.0, "fat": 11.5},
-  {"id": "food_449", "name": "نقل بیدمشکی ارومیه با مغز گردو", "category": "nuts", "state": "cooked", "calories": 430, "protein": 4.5, "carbs": 82.0, "fat": 9.5},
-  {"id": "food_450", "name": "سوهان گزی مرغوب لقمه‌ای", "category": "nuts", "state": "cooked", "calories": 465, "protein": 6.5, "carbs": 66.0, "fat": 19.5},
-  {"id": "food_451", "name": "شیرینی مسقطی برشی زعفرانی", "category": "grains_cooked", "state": "cooked", "calories": 365, "protein": 1.5, "carbs": 76.0, "fat": 6.5},
-  {"id": "food_452", "name": "پشمک حاج‌عبدالله وانیلی", "category": "grains_cooked", "state": "cooked", "calories": 415, "protein": 2.5, "carbs": 88.0, "fat": 5.5},
-  {"id": "food_453", "name": "پشمک شکلاتی کاکائویی روکش‌دار", "category": "grains_cooked", "state": "cooked", "calories": 485, "protein": 4.0, "carbs": 74.0, "fat": 19.5},
-  {"id": "food_454", "name": "باسلوق ژله‌ای سنتی با گردو", "category": "nuts", "state": "cooked", "calories": 340, "protein": 2.5, "carbs": 72.0, "fat": 5.0},
-  {"id": "food_455", "name": "راحت‌الحلقوم رنگی با پودر نارگیل", "category": "grains_cooked", "state": "cooked", "calories": 330, "protein": 1.0, "carbs": 80.0, "fat": 0.8},
-  {"id": "food_456", "name": "بیسکویت ویفر کرم‌دار موزی", "category": "grains_cooked", "state": "cooked", "calories": 505, "protein": 4.5, "carbs": 66.0, "fat": 24.5},
-  {"id": "food_457", "name": "بیسکویت مادر کودک کلسیم‌دار", "category": "grains_cooked", "state": "cooked", "calories": 435, "protein": 8.0, "carbs": 74.0, "fat": 11.5},
-  {"id": "food_458", "name": "شکلات تلخ ۹۶٪ رژیمی خالص", "category": "fats", "state": "cooked", "calories": 615, "protein": 10.0, "carbs": 24.0, "fat": 54.0},
-  {"id": "food_459", "name": "شکلات شیری مغزدار فندقی", "category": "dairy", "state": "cooked", "calories": 550, "protein": 7.5, "carbs": 54.0, "fat": 33.5},
-  {"id": "food_460", "name": "آدامس بادکنکی شکردار معمولی", "category": "grains_cooked", "state": "raw", "calories": 310, "protein": 0, "carbs": 78.0, "fat": 0.3},
-  {"id": "food_461", "name": "آدامس بدون قند زایلیتول دارچینی", "category": "grains_cooked", "state": "raw", "calories": 160, "protein": 0, "carbs": 68.0, "fat": 0},
-  {"id": "food_462", "name": "پاستیل ژلاتینی میوه‌ای خرسی", "category": "grains_cooked", "state": "cooked", "calories": 340, "protein": 6.8, "carbs": 78.0, "fat": 0.2},
-  {"id": "food_463", "name": "نان جو دوسر پروتئینی تست", "category": "grains_cooked", "state": "cooked", "calories": 230, "protein": 14.5, "carbs": 38.0, "fat": 2.5},
-  {"id": "food_464", "name": "نان خرمایی محلی کرمانشاه", "category": "nuts", "state": "cooked", "calories": 360, "protein": 5.2, "carbs": 68.0, "fat": 7.5},
-  {"id": "food_465", "name": "نان برنجی اعلا کرمانشاهی زعفرانی", "category": "grains_cooked", "state": "cooked", "calories": 465, "protein": 4.5, "carbs": 69.0, "fat": 18.5},
-  {"id": "food_466", "name": "نان شکری سنتی کرمانشاه", "category": "grains_cooked", "state": "cooked", "calories": 450, "protein": 5.0, "carbs": 72.0, "fat": 15.5},
-  {"id": "food_467", "name": "کاک سنتی کرمانشاهی با پودر پسته", "category": "grains_cooked", "state": "cooked", "calories": 445, "protein": 6.5, "carbs": 65.0, "fat": 17.5},
-  {"id": "food_468", "name": "نان فطیر اراک سنتی گردویی", "category": "grains_cooked", "state": "cooked", "calories": 385, "protein": 7.5, "carbs": 64.0, "fat": 10.5},
-  {"id": "food_469", "name": "کلوچه فومن گیلانی اصیل با گردو", "category": "grains_cooked", "state": "cooked", "calories": 430, "protein": 6.0, "carbs": 66.0, "fat": 16.0},
-  {"id": "food_470", "name": "نان اهری سنتی آذربایجان", "category": "grains_cooked", "state": "cooked", "calories": 390, "protein": 6.5, "carbs": 68.0, "fat": 9.5},
-  {"id": "food_471", "name": "شیرینی قرابیه پسته تبریز", "category": "nuts", "state": "cooked", "calories": 490, "protein": 11.0, "carbs": 54.0, "fat": 25.5},
-  {"id": "food_472", "name": "شیرینی قرابیه بادام تبریزی", "category": "nuts", "state": "cooked", "calories": 485, "protein": 11.5, "carbs": 55.0, "fat": 24.5},
-  {"id": "food_473", "name": "شیرینی نوقا گردویی تبریز", "category": "nuts", "state": "cooked", "calories": 430, "protein": 6.5, "carbs": 72.0, "fat": 13.0},
-  {"id": "food_474", "name": "شیرینی اریس شیری تبریز", "category": "dairy", "state": "cooked", "calories": 415, "protein": 7.0, "carbs": 75.0, "fat": 9.5},
-  {"id": "food_475", "name": "شیرینی چنگمال کرمانی با خرما و کلمپه", "category": "nuts", "state": "cooked", "calories": 395, "protein": 5.5, "carbs": 68.0, "fat": 11.0},
-  {"id": "food_476", "name": "کلمپه سنتی کرمان گردویی و خرمایی", "category": "nuts", "state": "cooked", "calories": 410, "protein": 5.8, "carbs": 67.0, "fat": 13.5},
-  {"id": "food_477", "name": "قوتو (قاووت) چهل‌گیاه کرمان", "category": "nuts", "state": "raw", "calories": 465, "protein": 10.5, "carbs": 64.0, "fat": 18.5},
-  {"id": "food_478", "name": "قوتو پسته کرمانی اعلا", "category": "nuts", "state": "raw", "calories": 510, "protein": 14.0, "carbs": 52.0, "fat": 26.5},
-  {"id": "food_479", "name": "قوتو نارگیلی پودری", "category": "nuts", "state": "raw", "calories": 495, "protein": 6.5, "carbs": 58.0, "fat": 26.0},
-  {"id": "food_480", "name": "پودر نارگیل چرب خشک", "category": "nuts", "state": "raw", "calories": 660, "protein": 6.9, "carbs": 23.7, "fat": 64.5},
-  {"id": "food_481", "name": "آب نارگیل طبیعی قوطی", "category": "fruits", "state": "raw", "calories": 19, "protein": 0.7, "carbs": 3.7, "fat": 0.2},
-  {"id": "food_482", "name": "شیر نارگیل غلیظ کنسروی", "category": "dairy", "state": "cooked", "calories": 230, "protein": 2.3, "carbs": 5.5, "fat": 23.8},
-  {"id": "food_483", "name": "سوپ عدس قرمز ترکی مرجیمک", "category": "legumes_cooked", "state": "cooked", "calories": 78, "protein": 4.8, "carbs": 12.0, "fat": 1.2},
-  {"id": "food_484", "name": "حمص لبنانی با ارده و روغن زیتون", "category": "legumes_cooked", "state": "cooked", "calories": 166, "protein": 7.9, "carbs": 14.3, "fat": 9.6},
-  {"id": "food_485", "name": "متبل بادمجان کبابی با ارده", "category": "vegetables", "state": "cooked", "calories": 115, "protein": 3.5, "carbs": 8.0, "fat": 7.8},
-  {"id": "food_486", "name": "سالاد تبوله با جعفری و بلغور گندم", "category": "vegetables", "state": "raw", "calories": 95, "protein": 2.2, "carbs": 9.5, "fat": 5.5},
-  {"id": "food_487", "name": "سالاد فتوش لبنانی با نان برشته پیتا", "category": "vegetables", "state": "raw", "calories": 80, "protein": 1.8, "carbs": 11.0, "fat": 3.2},
-  {"id": "food_488", "name": "شاورما سینه مرغ مدیترانه‌ای", "category": "protein_cooked", "state": "cooked", "calories": 185, "protein": 22.0, "carbs": 3.5, "fat": 9.0},
-  {"id": "food_489", "name": "شاورما گوشت گوساله چرخیده", "category": "protein_cooked", "state": "cooked", "calories": 220, "protein": 21.0, "carbs": 2.0, "fat": 14.0},
-  {"id": "food_490", "name": "سوپ تره‌فرنگی و سیب‌زمینی", "category": "vegetables", "state": "cooked", "calories": 52, "protein": 1.5, "carbs": 9.5, "fat": 0.8},
-  {"id": "food_491", "name": "سوپ پیاز کاراملی فرانسوی", "category": "vegetables", "state": "cooked", "calories": 68, "protein": 2.0, "carbs": 10.5, "fat": 2.0},
-  {"id": "food_492", "name": "سوپ قارچ و جو سفید", "category": "grains_cooked", "state": "cooked", "calories": 60, "protein": 2.8, "carbs": 9.5, "fat": 1.0},
-  {"id": "food_493", "name": "سوپ کدو حلوایی با ادویه زنجبیل", "category": "vegetables", "state": "cooked", "calories": 48, "protein": 1.2, "carbs": 8.5, "fat": 1.0},
-  {"id": "food_494", "name": "سالاد کلم سفید و کشمش با هویج", "category": "vegetables", "state": "raw", "calories": 75, "protein": 1.4, "carbs": 13.0, "fat": 2.0},
-  {"id": "food_495", "name": "سالاد بروکلی خام با سس ماست و مغز تخمه", "category": "vegetables", "state": "raw", "calories": 85, "protein": 3.8, "carbs": 7.0, "fat": 4.8},
-  {"id": "food_496", "name": "سالاد کینوا و خیار و گوجه رژیمی", "category": "grains_cooked", "state": "cooked", "calories": 110, "protein": 3.6, "carbs": 18.0, "fat": 2.5},
-  {"id": "food_497", "name": "سالاد مرغ رژیمی با کاهو و سس خردل", "category": "protein_cooked", "state": "cooked", "calories": 125, "protein": 16.0, "carbs": 3.0, "fat": 5.0},
-  {"id": "food_498", "name": "خوراک گوشت استروگانف با قارچ و سس سفید", "category": "iranian", "state": "cooked", "calories": 215, "protein": 18.0, "carbs": 5.5, "fat": 13.5},
-  {"id": "food_499", "name": "چیکن استروگانف با سینه مرغ و خامه کم", "category": "iranian", "state": "cooked", "calories": 185, "protein": 21.0, "carbs": 4.5, "fat": 9.0},
-  {"id": "food_500", "name": "لازانیا گوشت خانگی با پنیر پیتزا و سس بشامل", "category": "iranian", "state": "cooked", "calories": 235, "protein": 13.0, "carbs": 21.0, "fat": 11.0}
-    ];
-
-    // ۲. دیتابیس رسپی‌های استاندارد
+    // رسپی‌های استاندارد بالینی
     const MASTER_RECIPES = [
       {
         id: "rec_chicken_pasta",
         title: "پاستای فیله مرغ مدیترانه‌ای با روغن زیتون",
-        requiredTags: ["p_raw_chick_breast", "pas_raw_spaghetti", "ft_oliveoil"],
-        altTags: [["p_raw_chick_fillet", "p_ckd_chick_breast"], ["pas_raw_penne", "pas_ckd_spaghetti"]],
+        requiredTags: ["usda_p1", "pas_1", "ft_1"],
+        altTags: [["usda_p5", "usda_p2"], ["pas_3", "pas_2"]],
         description: "وعده تعادلی فوق‌العاده برای ریکاوری عضلانی و تامین پایدار گلیکوژن با چربی‌های مفید.",
         prepTime: "۲۵ دقیقه",
         steps: [
@@ -1496,8 +906,8 @@
       {
         id: "rec_chicken_rice_kateh",
         title: "چلو فیله مرغ کته زعفرانی کم‌چرب",
-        requiredTags: ["p_raw_chick_breast", "gr_raw_rice_tarem"],
-        altTags: [["p_raw_chick_fillet", "p_ckd_chick_breast"], ["gr_ckd_rice_kateh"]],
+        requiredTags: ["usda_p1", "gr_1"],
+        altTags: [["usda_p5", "usda_p2"], ["gr_2"]],
         description: "غذای بنیادین تغذیه ورزشی برای هضم آسان و بیشترین بازدهی سنتز پروتئین.",
         prepTime: "۳۵ دقیقه",
         steps: [
@@ -1507,22 +917,10 @@
         ]
       },
       {
-        id: "rec_lentil_rice_majlesi",
-        title: "عدس‌پلو مقوی با فیله مرغ",
-        requiredTags: ["leg_raw_lentil_brown", "gr_raw_rice_tarem"],
-        altTags: [["leg_ckd_lentil_brown"], ["gr_ckd_rice_kateh"]],
-        description: "ترکیب کامل اسیدهای آمینه ضروری به واسطه همراهی غلات و حبوبات.",
-        prepTime: "۴۰ دقیقه",
-        steps: [
-          "عدس را بپزید تا نرم شود.",
-          "برنج و عدس را کته کرده و مرغ تفت‌داده را روی آن سرو کنید."
-        ]
-      },
-      {
         id: "rec_tuna_potato_salad",
         title: "سالاد رژیمی تن ماهی و سیب‌زمینی پخته",
-        requiredTags: ["cn_tuna_water", "gr_raw_potato"],
-        altTags: [["cn_tuna_oil"], ["gr_ckd_potato_boiled"]],
+        requiredTags: ["cn_1", "gr_10"],
+        altTags: [["cn_2"], ["gr_11"]],
         description: "سرشار از امگا-۳ و نشاسته مقاوم با شاخص سیری بسیار بالا.",
         prepTime: "۲۰ دقیقه",
         steps: [
@@ -1570,7 +968,11 @@
         } catch { return dateStr; }
       }
 
-      getAllFoods() { return [...this.state.customFoods, ...MASTER_FOODS]; }
+      // خواندن هوشمند غذاها از فایل خارجی foods.js یا آرایه داخلی
+      getAllFoods() { 
+        const externalFoods = (window.MASTER_FOODS && Array.isArray(window.MASTER_FOODS)) ? window.MASTER_FOODS : [];
+        return [...this.state.customFoods, ...externalFoods]; 
+      }
 
       calculateBMR() {
         const { gender, weight, height, age } = this.state.profile;
@@ -1615,81 +1017,72 @@
         if (!this.currentUser || !supabaseClient) return;
         const uid = this.currentUser.id;
 
-        const { data: prof } = await supabaseClient.from('user_profiles').select('*').eq('user_id', uid).maybeSingle();
-        if (prof) {
-          this.state.profile = {
-            name: prof.full_name,
-            gender: prof.gender,
-            age: prof.age,
-            height: prof.height,
-            weight: prof.weight,
-            activityLevel: prof.activity_level,
-            goal: prof.goal,
-            ratioProteinPerKg: prof.ratio_protein_per_kg,
-            ratioFatPerKg: prof.ratio_fat_per_kg
-          };
-          this.state.goals = {
-            mode: "auto",
-            targetCalories: prof.target_calories,
-            targetProtein: prof.target_protein,
-            targetCarbs: prof.target_carbs,
-            targetFat: prof.target_fat
-          };
-        }
-
-        const { data: foods } = await supabaseClient.from('food_logs').select('*').eq('user_id', uid);
-        this.state.foodLogs = {};
-        if (foods && foods.length > 0) {
-          foods.forEach(f => {
-            const d = f.log_date;
-            if (!this.state.foodLogs[d]) this.state.foodLogs[d] = [];
-            this.state.foodLogs[d].push({ id: f.id, name: f.food_name, state: f.food_state, weight: f.weight_grams, meal: f.meal_type, cal: f.calories, prot: f.protein, carb: f.carbs, fat: f.fat });
-          });
-        }
-
-        const { data: weights } = await supabaseClient.from('weight_logs').select('*').eq('user_id', uid).order('record_date', { ascending: true });
-        this.state.weightLogs = [];
-        if (weights && weights.length > 0) {
-          this.state.weightLogs = weights.map(w => ({ id: w.id, date: w.record_date, time: w.record_time, weight: w.weight_kg, note: w.note }));
-        }
-
-        const { data: acts } = await supabaseClient.from('activity_logs').select('*').eq('user_id', uid);
-        this.state.activityLogs = {};
-        if (acts && acts.length > 0) {
-          acts.forEach(a => {
-            const d = a.activity_date;
-            if (!this.state.activityLogs[d]) this.state.activityLogs[d] = [];
-            this.state.activityLogs[d].push({ id: a.id, name: a.activity_name, duration: a.duration_minutes, intensity: a.intensity, calories: a.calories_burned, source: a.source || 'MET' });
-          });
-        }
-
-        const { data: customDbFoods } = await supabaseClient.from('user_custom_foods').select('*').eq('user_id', uid);
-        this.state.customFoods = [];
-        if (customDbFoods && customDbFoods.length > 0) {
-          this.state.customFoods = customDbFoods.map(cf => ({
-            id: cf.id,
-            name: cf.food_name,
-            category: cf.category,
-            state: cf.food_state,
-            calories: Number(cf.calories),
-            protein: Number(cf.protein),
-            carbs: Number(cf.carbs),
-            fat: Number(cf.fat),
-            isCustom: true
-          }));
-        }
-
-        if (Object.keys(this.state.foodLogs).length === 0 && this.state.weightLogs.length === 0) {
-          const { data: legacyState } = await supabaseClient.from('user_nutrition_state').select('app_data').eq('user_id', uid).maybeSingle();
-          if (legacyState && legacyState.app_data) {
-            const old = legacyState.app_data;
-            if (old.foodLogs) this.state.foodLogs = old.foodLogs;
-            if (old.weightLogs) this.state.weightLogs = old.weightLogs;
-            if (old.activityLogs) this.state.activityLogs = old.activityLogs;
-            if (old.profile) this.state.profile = old.profile;
-            if (old.goals) this.state.goals = old.goals;
-            if (old.customFoods && this.state.customFoods.length === 0) this.state.customFoods = old.customFoods;
+        try {
+          const { data: prof } = await supabaseClient.from('user_profiles').select('*').eq('user_id', uid).maybeSingle();
+          if (prof) {
+            this.state.profile = {
+              name: prof.full_name,
+              gender: prof.gender,
+              age: prof.age,
+              height: prof.height,
+              weight: prof.weight,
+              activityLevel: prof.activity_level,
+              goal: prof.goal,
+              ratioProteinPerKg: prof.ratio_protein_per_kg,
+              ratioFatPerKg: prof.ratio_fat_per_kg
+            };
+            this.state.goals = {
+              mode: "auto",
+              targetCalories: prof.target_calories,
+              targetProtein: prof.target_protein,
+              targetCarbs: prof.target_carbs,
+              targetFat: prof.target_fat
+            };
           }
+
+          const { data: foods } = await supabaseClient.from('food_logs').select('*').eq('user_id', uid);
+          this.state.foodLogs = {};
+          if (foods && foods.length > 0) {
+            foods.forEach(f => {
+              const d = f.log_date;
+              if (!this.state.foodLogs[d]) this.state.foodLogs[d] = [];
+              this.state.foodLogs[d].push({ id: f.id, name: f.food_name, state: f.food_state, weight: f.weight_grams, meal: f.meal_type, cal: f.calories, prot: f.protein, carb: f.carbs, fat: f.fat });
+            });
+          }
+
+          const { data: weights } = await supabaseClient.from('weight_logs').select('*').eq('user_id', uid).order('record_date', { ascending: true });
+          this.state.weightLogs = [];
+          if (weights && weights.length > 0) {
+            this.state.weightLogs = weights.map(w => ({ id: w.id, date: w.record_date, time: w.record_time, weight: w.weight_kg, note: w.note }));
+          }
+
+          const { data: acts } = await supabaseClient.from('activity_logs').select('*').eq('user_id', uid);
+          this.state.activityLogs = {};
+          if (acts && acts.length > 0) {
+            acts.forEach(a => {
+              const d = a.activity_date;
+              if (!this.state.activityLogs[d]) this.state.activityLogs[d] = [];
+              this.state.activityLogs[d].push({ id: a.id, name: a.activity_name, duration: a.duration_minutes, intensity: a.intensity, calories: a.calories_burned, source: a.source || 'MET' });
+            });
+          }
+
+          const { data: customDbFoods } = await supabaseClient.from('user_custom_foods').select('*').eq('user_id', uid);
+          this.state.customFoods = [];
+          if (customDbFoods && customDbFoods.length > 0) {
+            this.state.customFoods = customDbFoods.map(cf => ({
+              id: cf.id,
+              name: cf.food_name,
+              category: cf.category,
+              state: cf.food_state,
+              calories: Number(cf.calories),
+              protein: Number(cf.protein),
+              carbs: Number(cf.carbs),
+              fat: Number(cf.fat),
+              isCustom: true
+            }));
+          }
+        } catch (err) {
+          console.warn("خطا در دریافت جداول:", err);
         }
       }
 
@@ -1697,23 +1090,27 @@
         if (!this.currentUser || !supabaseClient) return;
         const p = this.state.profile;
         const g = this.state.goals;
-        await supabaseClient.from('user_profiles').upsert({
-          user_id: this.currentUser.id,
-          full_name: p.name,
-          gender: p.gender,
-          age: p.age,
-          height: p.height,
-          weight: p.weight,
-          activity_level: p.activityLevel,
-          goal: p.goal,
-          ratio_protein_per_kg: p.ratioProteinPerKg,
-          ratio_fat_per_kg: p.ratioFatPerKg,
-          target_calories: g.targetCalories,
-          target_protein: g.targetProtein,
-          target_carbs: g.targetCarbs,
-          target_fat: g.targetFat,
-          updated_at: new Date().toISOString()
-        });
+        try {
+          await supabaseClient.from('user_profiles').upsert({
+            user_id: this.currentUser.id,
+            full_name: p.name,
+            gender: p.gender,
+            age: p.age,
+            height: p.height,
+            weight: p.weight,
+            activity_level: p.activityLevel,
+            goal: p.goal,
+            ratio_protein_per_kg: p.ratioProteinPerKg,
+            ratio_fat_per_kg: p.ratioFatPerKg,
+            target_calories: g.targetCalories,
+            target_protein: g.targetProtein,
+            target_carbs: g.targetCarbs,
+            target_fat: g.targetFat,
+            updated_at: new Date().toISOString()
+          });
+        } catch (e) {
+          console.warn("خطا در ذخیره پروفایل:", e);
+        }
       }
     }
 
@@ -1730,16 +1127,22 @@
       initTheme() { document.documentElement.setAttribute('data-theme', this.engine.state.theme); }
 
       async checkAuthSession() {
-        if (!supabaseClient) return;
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session && session.user) {
-          this.engine.currentUser = session.user;
-          await this.engine.fetchUserDataFromTables();
-          document.getElementById('authOverlayWrapper').style.display = 'none';
-          document.getElementById('userDisplayName').innerText = `سلام، ${this.engine.state.profile.name || 'ورزشکار عزیز'}`;
-          document.getElementById('cloudStatusBadge').innerText = `همگام با حساب کاربری`;
-          this.renderAllViews();
-        } else {
+        if (!supabaseClient) {
+          document.getElementById('authOverlayWrapper').style.display = 'flex';
+          return;
+        }
+        try {
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          if (session && session.user) {
+            this.engine.currentUser = session.user;
+            await this.engine.fetchUserDataFromTables();
+            document.getElementById('authOverlayWrapper').style.display = 'none';
+            document.getElementById('userDisplayName').innerText = `سلام، ${this.engine.state.profile.name || 'ورزشکار عزیز'}`;
+            this.renderAllViews();
+          } else {
+            document.getElementById('authOverlayWrapper').style.display = 'flex';
+          }
+        } catch (err) {
           document.getElementById('authOverlayWrapper').style.display = 'flex';
         }
       }
@@ -1785,16 +1188,25 @@
           const fb = document.getElementById('loginFeedback');
           if (!email || !password) { fb.innerHTML = '<span style="color:var(--color-danger)">ایمیل و رمز را وارد کنید.</span>'; return; }
 
+          if (!supabaseClient) {
+            fb.innerHTML = '<span style="color:var(--color-danger)">خطای شبکه در اتصال به سرور ابری. اینترنت را چک کنید.</span>';
+            return;
+          }
+
           fb.innerHTML = '<span style="color:var(--healthy-orange)">در حال اعتبارسنجی...</span>';
-          const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-          if (error) {
-            fb.innerHTML = `<span style="color:var(--color-danger)">${error.message}</span>`;
-          } else {
-            this.engine.currentUser = data.user;
-            await this.engine.fetchUserDataFromTables();
-            document.getElementById('authOverlayWrapper').style.display = 'none';
-            document.getElementById('userDisplayName').innerText = `سلام، ${this.engine.state.profile.name || 'ورزشکار عزیز'}`;
-            this.renderAllViews();
+          try {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) {
+              fb.innerHTML = `<span style="color:var(--color-danger)">${error.message}</span>`;
+            } else {
+              this.engine.currentUser = data.user;
+              await this.engine.fetchUserDataFromTables();
+              document.getElementById('authOverlayWrapper').style.display = 'none';
+              document.getElementById('userDisplayName').innerText = `سلام، ${this.engine.state.profile.name || 'ورزشکار عزیز'}`;
+              this.renderAllViews();
+            }
+          } catch (err) {
+            fb.innerHTML = `<span style="color:var(--color-danger)">خطا در ورود: ${err.message}</span>`;
           }
         });
 
@@ -1804,22 +1216,31 @@
           const fb = document.getElementById('signupFeedback');
           if (!email || !password) { fb.innerHTML = '<span style="color:var(--color-danger)">ایمیل و رمز عبور الزامی است.</span>'; return; }
 
+          if (!supabaseClient) {
+            fb.innerHTML = '<span style="color:var(--color-danger)">خطای شبکه در اتصال به سرور ابری.</span>';
+            return;
+          }
+
           fb.innerHTML = '<span style="color:var(--healthy-orange)">در حال ساخت حساب...</span>';
-          const { data, error } = await supabaseClient.auth.signUp({ email, password });
-          if (error) {
-            fb.innerHTML = `<span style="color:var(--color-danger)">خطا: ${error.message}</span>`;
-          } else {
-            alert(`حساب کاربری با موفقیت ساخته شد!\n\nایمیل فعال‌سازی به ${email} ارسال شد. لطفاً آن را تایید کرده و سپس وارد شوید.`);
-            document.getElementById('signupEmail').value = '';
-            document.getElementById('signupPassword').value = '';
-            document.getElementById('signupCard').classList.add('hidden');
-            document.getElementById('loginCard').classList.remove('hidden');
+          try {
+            const { data, error } = await supabaseClient.auth.signUp({ email, password });
+            if (error) {
+              fb.innerHTML = `<span style="color:var(--color-danger)">خطا: ${error.message}</span>`;
+            } else {
+              alert(`حساب کاربری با موفقیت ساخته شد!\n\nایمیل فعال‌سازی به ${email} ارسال شد. لطفاً آن را تایید کرده و سپس وارد شوید.`);
+              document.getElementById('signupEmail').value = '';
+              document.getElementById('signupPassword').value = '';
+              document.getElementById('signupCard').classList.add('hidden');
+              document.getElementById('loginCard').classList.remove('hidden');
+            }
+          } catch (err) {
+            fb.innerHTML = `<span style="color:var(--color-danger)">خطا: ${err.message}</span>`;
           }
         });
 
         document.getElementById('btnSignOutAccount').addEventListener('click', async () => {
           if (confirm("آیا قصد خروج از حساب کاربری را دارید؟")) {
-            await supabaseClient.auth.signOut();
+            if (supabaseClient) await supabaseClient.auth.signOut();
             location.reload();
           }
         });
@@ -2036,7 +1457,7 @@
         document.getElementById('dashCarbsProgress').style.width = `${Math.min(100, cPct)}%`;
         document.getElementById('dashCarbsRemDisplay').textContent = `باقی‌مانده: ${cRem}g`;
 
-        // چربی (بدون کلمه مفید)
+        // چربی
         const fTarget = goals.targetFat || 1;
         const fPct = Math.round((summary.consumedFat / fTarget) * 100);
         const fRem = Math.max(0, +(fTarget - summary.consumedFat).toFixed(1));
@@ -2161,19 +1582,23 @@ ${activityReport}`;
         this.engine.state.foodLogs[dateStr].push(rec);
 
         if (this.engine.currentUser && supabaseClient) {
-          await supabaseClient.from('food_logs').insert([{
-            id: recordId,
-            user_id: this.engine.currentUser.id,
-            log_date: dateStr,
-            meal_type: mealType,
-            food_name: food.name,
-            food_state: food.state,
-            weight_grams: weight,
-            calories: cal,
-            protein: prot,
-            carbs: carb,
-            fat: fat
-          }]);
+          try {
+            await supabaseClient.from('food_logs').insert([{
+              id: recordId,
+              user_id: this.engine.currentUser.id,
+              log_date: dateStr,
+              meal_type: mealType,
+              food_name: food.name,
+              food_state: food.state,
+              weight_grams: weight,
+              calories: cal,
+              protein: prot,
+              carbs: carb,
+              fat: fat
+            }]);
+          } catch (e) {
+            console.warn(e);
+          }
         }
 
         document.getElementById('foodSearchLive').value = '';
@@ -2236,7 +1661,11 @@ ${activityReport}`;
       async deleteFoodLog(id) {
         this.engine.state.foodLogs[this.engine.currentDate] = (this.engine.state.foodLogs[this.engine.currentDate] || []).filter(l => l.id !== id);
         if (this.engine.currentUser && supabaseClient) {
-          await supabaseClient.from('food_logs').delete().eq('id', id);
+          try {
+            await supabaseClient.from('food_logs').delete().eq('id', id);
+          } catch (e) {
+            console.warn(e);
+          }
         }
         this.renderDashboard();
         this.renderDailyMealLogs();
@@ -2255,14 +1684,18 @@ ${activityReport}`;
         this.engine.state.weightLogs.sort((a, b) => new Date(a.date) - new Date(b.date));
 
         if (this.engine.currentUser && supabaseClient) {
-          await supabaseClient.from('weight_logs').insert([{
-            id: recordId,
-            user_id: this.engine.currentUser.id,
-            record_date: date,
-            record_time: time,
-            weight_kg: w,
-            note: note
-          }]);
+          try {
+            await supabaseClient.from('weight_logs').insert([{
+              id: recordId,
+              user_id: this.engine.currentUser.id,
+              record_date: date,
+              record_time: time,
+              weight_kg: w,
+              note: note
+            }]);
+          } catch (e) {
+            console.warn(e);
+          }
         }
 
         this.renderAllViews();
@@ -2320,7 +1753,11 @@ ${activityReport}`;
         if (!confirm("رکورد وزن حذف شود؟")) return;
         this.engine.state.weightLogs = this.engine.state.weightLogs.filter(w => String(w.id) !== String(id));
         if (this.engine.currentUser && supabaseClient) {
-          await supabaseClient.from('weight_logs').delete().eq('id', id);
+          try {
+            await supabaseClient.from('weight_logs').delete().eq('id', id);
+          } catch (e) {
+            console.warn(e);
+          }
         }
         this.renderAllViews();
       }
@@ -2389,15 +1826,19 @@ ${activityReport}`;
         this.engine.state.activityLogs[dateStr].push({ id: recordId, name, duration, intensity, calories: Number(calories), source });
 
         if (this.engine.currentUser && supabaseClient) {
-          await supabaseClient.from('activity_logs').insert([{
-            id: recordId,
-            user_id: this.engine.currentUser.id,
-            activity_date: dateStr,
-            activity_name: name,
-            duration_minutes: duration,
-            intensity: intensity,
-            calories_burned: Number(calories)
-          }]);
+          try {
+            await supabaseClient.from('activity_logs').insert([{
+              id: recordId,
+              user_id: this.engine.currentUser.id,
+              activity_date: dateStr,
+              activity_name: name,
+              duration_minutes: duration,
+              intensity: intensity,
+              calories_burned: Number(calories)
+            }]);
+          } catch (e) {
+            console.warn(e);
+          }
         }
 
         this.renderDashboard();
@@ -2432,7 +1873,11 @@ ${activityReport}`;
       async deleteActivityLog(id) {
         this.engine.state.activityLogs[this.engine.currentDate] = (this.engine.state.activityLogs[this.engine.currentDate] || []).filter(a => a.id !== id);
         if (this.engine.currentUser && supabaseClient) {
-          await supabaseClient.from('activity_logs').delete().eq('id', id);
+          try {
+            await supabaseClient.from('activity_logs').delete().eq('id', id);
+          } catch (e) {
+            console.warn(e);
+          }
         }
         this.renderDashboard();
         this.renderDailyActivities();
@@ -2441,9 +1886,9 @@ ${activityReport}`;
       initIngredientDefaultRows() {
         const container = document.getElementById('rawIngredientsRowsContainer');
         if (container.children.length > 0) return;
-        this.addIngredientRowItem('p_raw_chick_breast');
-        this.addIngredientRowItem('pas_raw_spaghetti');
-        this.addIngredientRowItem('ft_oliveoil');
+        this.addIngredientRowItem('usda_p1');
+        this.addIngredientRowItem('pas_1');
+        this.addIngredientRowItem('ft_1');
       }
 
       addIngredientRowItem(defaultFoodId = '') {
@@ -2659,17 +2104,21 @@ ${activityReport}`;
         this.engine.state.customFoods.unshift(newFoodObj);
 
         if (this.engine.currentUser && supabaseClient) {
-          await supabaseClient.from('user_custom_foods').insert([{
-            id: foodId,
-            user_id: this.engine.currentUser.id,
-            food_name: name,
-            category: category,
-            food_state: state,
-            calories: cal,
-            protein: prot,
-            carbs: carb,
-            fat: fat
-          }]);
+          try {
+            await supabaseClient.from('user_custom_foods').insert([{
+              id: foodId,
+              user_id: this.engine.currentUser.id,
+              food_name: name,
+              category: category,
+              food_state: state,
+              calories: cal,
+              protein: prot,
+              carbs: carb,
+              fat: fat
+            }]);
+          } catch (e) {
+            console.warn(e);
+          }
         }
 
         this.closeCustomFoodModal();
@@ -2681,22 +2130,21 @@ ${activityReport}`;
         this.engine.state.customFoods = this.engine.state.customFoods.filter(f => f.id !== id);
 
         if (this.engine.currentUser && supabaseClient) {
-          await supabaseClient.from('user_custom_foods').delete().eq('id', id);
+          try {
+            await supabaseClient.from('user_custom_foods').delete().eq('id', id);
+          } catch (e) {
+            console.warn(e);
+          }
         }
 
         this.renderFullFoodDatabaseTable();
       }
 
-      // ساخت نمودار خطی پیوسته و جامع برای گزارش‌ها
       renderReports() {
-        if (!window.Chart) {
-          console.warn("کتابخانه Chart.js هنوز بارگذاری نشده است.");
-          return;
-        }
+        if (!window.Chart) return;
         const canvas = document.getElementById('reportCaloriesChart');
         if (!canvas) return;
 
-        // استخراج تمام تاریخ‌های دارای ثبت در دیتابیس
         const loggedDates = Object.keys(this.engine.state.foodLogs || {}).filter(d => {
           const s = this.engine.getDailySummary(d);
           return s.consumedCal > 0 || s.logsCount > 0;
@@ -2704,7 +2152,6 @@ ${activityReport}`;
 
         const todayStr = this.engine.getTodayDateString();
         
-        // ساخت بازه زمانی پیوسته (حداقل ۷ روز اخیر یا از اولین روز ثبت تا به امروز)
         let allDates = [];
         let startDate = new Date();
         startDate.setDate(startDate.getDate() - 6);
@@ -2820,9 +2267,11 @@ ${activityReport}`;
       }
     }
 
-    const engine = new NutritionOSEngine();
-    const app = new NutritionOSUI(engine);
-    window.app = app;
+    window.addEventListener('DOMContentLoaded', () => {
+      const engine = new NutritionOSEngine();
+      const app = new NutritionOSUI(engine);
+      window.app = app;
+    });
   </script>
 </body>
 </html>
